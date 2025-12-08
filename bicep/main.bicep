@@ -1,5 +1,6 @@
+@description('Legacy infrastructure template - assumes resource group already exists. Deploy at resource group scope: az deployment group create --resource-group <rg-name> --template-file main.bicep')
+
 param location string = 'East US'
-param resourceGroupName string = 'autopr-rg'
 param acrName string = 'autopracr'
 param aksClusterName string = 'autopr-aks'
 
@@ -9,15 +10,9 @@ param postgresLogin string = 'autopr'
 @secure()
 param postgresPassword string
 
-resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: resourceGroupName
-  location: location
-}
-
 resource acr 'Microsoft.ContainerRegistry/registries@2021-09-01' = {
   name: acrName
   location: location
-  resourceGroup: rg.name
   sku: {
     name: 'Standard'
   }
@@ -29,7 +24,9 @@ resource acr 'Microsoft.ContainerRegistry/registries@2021-09-01' = {
 resource aks 'Microsoft.ContainerService/managedClusters@2022-03-01' = {
   name: aksClusterName
   location: location
-  resourceGroup: rg.name
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties: {
     dnsPrefix: 'autopr'
     agentPoolProfiles: [
@@ -40,16 +37,12 @@ resource aks 'Microsoft.ContainerService/managedClusters@2022-03-01' = {
         mode: 'System'
       }
     ]
-    identity: {
-      type: 'SystemAssigned'
-    }
   }
 }
 
 resource postgres 'Microsoft.DBforPostgreSQL/servers@2017-12-01' = {
   name: 'autopr-postgres'
   location: location
-  resourceGroup: rg.name
   sku: {
     name: 'B_Gen5_1'
     tier: 'Basic'
@@ -60,13 +53,13 @@ resource postgres 'Microsoft.DBforPostgreSQL/servers@2017-12-01' = {
     administratorLogin: postgresLogin
     administratorLoginPassword: postgresPassword
     sslEnforcement: 'Enabled'
+    createMode: 'Default'
   }
 }
 
 resource redis 'Microsoft.Cache/Redis@2020-06-01' = {
   name: 'autopr-redis'
   location: location
-  resourceGroup: rg.name
   properties: {
     sku: {
       name: 'Basic'

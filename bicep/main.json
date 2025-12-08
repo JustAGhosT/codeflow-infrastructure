@@ -1,0 +1,105 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.39.26.7824",
+      "templateHash": "16242175563169428992"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "East US",
+      "metadata": {
+        "description": "Legacy infrastructure template - assumes resource group already exists. Deploy at resource group scope: az deployment group create --resource-group <rg-name> --template-file main.bicep"
+      }
+    },
+    "acrName": {
+      "type": "string",
+      "defaultValue": "autopracr"
+    },
+    "aksClusterName": {
+      "type": "string",
+      "defaultValue": "autopr-aks"
+    },
+    "postgresLogin": {
+      "type": "string",
+      "defaultValue": "autopr",
+      "metadata": {
+        "description": "PostgreSQL administrator login username"
+      }
+    },
+    "postgresPassword": {
+      "type": "securestring"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.ContainerRegistry/registries",
+      "apiVersion": "2021-09-01",
+      "name": "[parameters('acrName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "adminUserEnabled": true
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2022-03-01",
+      "name": "[parameters('aksClusterName')]",
+      "location": "[parameters('location')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "dnsPrefix": "autopr",
+        "agentPoolProfiles": [
+          {
+            "name": "default",
+            "count": 1,
+            "vmSize": "Standard_DS2_v2",
+            "mode": "System"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.DBforPostgreSQL/servers",
+      "apiVersion": "2017-12-01",
+      "name": "autopr-postgres",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "B_Gen5_1",
+        "tier": "Basic",
+        "capacity": 1
+      },
+      "properties": {
+        "version": "11",
+        "administratorLogin": "[parameters('postgresLogin')]",
+        "administratorLoginPassword": "[parameters('postgresPassword')]",
+        "sslEnforcement": "Enabled",
+        "createMode": "Default"
+      }
+    },
+    {
+      "type": "Microsoft.Cache/redis",
+      "apiVersion": "2020-06-01",
+      "name": "autopr-redis",
+      "location": "[parameters('location')]",
+      "properties": {
+        "sku": {
+          "name": "Basic",
+          "family": "C",
+          "capacity": 1
+        },
+        "enableNonSslPort": false,
+        "minimumTlsVersion": "1.2"
+      }
+    }
+  ]
+}
