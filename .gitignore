@@ -13,6 +13,10 @@ terraform.rc
 
 # Azure
 .azure/
+# Azure environment summaries (may contain secrets)
+az-environment-summary.json
+deployment-output.json
+*.json.bak
 
 # OS
 .DS_Store
