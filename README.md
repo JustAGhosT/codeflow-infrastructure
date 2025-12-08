@@ -6,7 +6,7 @@ Production infrastructure as code (IaC) for CodeFlow - the source of truth for l
 
 This repository contains CodeFlow-specific infrastructure definitions using Bicep and Terraform. This is where "real" infrastructure lives and is deployed from.
 
-**Important**: This repository contains production-grade, CodeFlow-specific infrastructure. For generic bootstrap scripts that can be used for any repository, see [`codeflow-azure-setup`](../codeflow-azure-setup).
+**Important**: This repository contains production-grade, CodeFlow-specific infrastructure. For generic bootstrap scripts that can be used for any repository, see [`codeflow-azure-setup`](https://github.com/JustAGhosT/codeflow-azure-setup).
 
 ## Infrastructure Components
 
