@@ -1,0 +1,239 @@
+version: "3.8"
+
+services:
+  # CodeFlow Engine main application
+  codeflow-engine:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+      target: production
+      args:
+        RUN_TESTS: "false" # Skip tests in compose build
+    container_name: codeflow-engine
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Core configuration
+      AUTOPR_ENV: ${AUTOPR_ENV:-development}
+      AUTOPR_HOST: ${AUTOPR_HOST:-0.0.0.0}
+      AUTOPR_PORT: ${AUTOPR_PORT:-8080}
+      AUTOPR_WORKERS: ${AUTOPR_WORKERS:-1}
+      AUTOPR_LOG_LEVEL: ${AUTOPR_LOG_LEVEL:-INFO}
+
+      # GitHub integration
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+      GITHUB_WEBHOOK_SECRET: ${GITHUB_WEBHOOK_SECRET}
+
+      # AI providers
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+
+      # Database connections
+      # TODO: SECURITY - Use secrets management in production (Vault, AWS Secrets Manager)
+      DATABASE_URL: postgresql://${POSTGRES_USER:-autopr}:${POSTGRES_PASSWORD:-CHANGE_ME_IMMEDIATELY}@postgres:5432/${POSTGRES_DB:-autopr}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-CHANGE_ME_REDIS}@redis:6379/0
+
+      # Integrations
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
+      LINEAR_API_KEY: ${LINEAR_API_KEY:-}
+      AXOLO_WORKSPACE_URL: ${AXOLO_WORKSPACE_URL:-}
+
+      # Monitoring
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      PROMETHEUS_ENABLED: ${PROMETHEUS_ENABLED:-true}
+
+    volumes:
+      - autopr_data:/app/data
+      - autopr_logs:/app/logs
+      - ./configs:/app/config:ro
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - codeflow-network
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    container_name: autopr-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-autopr}
+      POSTGRES_USER: ${POSTGRES_USER:-autopr}
+      # TODO: SECURITY - Generate strong random password on first setup
+      # CRITICAL: Change this default password immediately in production!
+      # Use: openssl rand -base64 32
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-CHANGE_ME_IMMEDIATELY}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    ports:
+      - "5432:5432" # Expose for development access
+    networks:
+      - codeflow-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U autopr -d autopr"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching and state
+  redis:
+    image: redis:7-alpine
+    container_name: autopr-redis
+    restart: unless-stopped
+    command: redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_PASSWORD:-CHANGE_ME_REDIS}
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-CHANGE_ME_REDIS}
+    volumes:
+      - redis_data:/data
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    ports:
+      - "6379:6379" # Expose for development access
+    networks:
+      - codeflow-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Background worker for async tasks
+  autopr-worker:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+      target: production
+      args:
+        RUN_TESTS: "false"
+    container_name: autopr-worker
+    restart: unless-stopped
+    command: ["autopr-worker"]
+    environment:
+      # Same environment as main app
+      AUTOPR_ENV: ${AUTOPR_ENV:-development}
+      AUTOPR_LOG_LEVEL: ${AUTOPR_LOG_LEVEL:-INFO}
+
+      # Worker-specific configuration
+      AUTOPR_WORKER_CONCURRENCY: ${AUTOPR_WORKER_CONCURRENCY:-4}
+      AUTOPR_WORKER_QUEUES: ${AUTOPR_WORKER_QUEUES:-default,high,low}
+
+      # Reuse environment from main service
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-autopr}:${POSTGRES_PASSWORD:-CHANGE_ME_IMMEDIATELY}@postgres:5432/${POSTGRES_DB:-autopr}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-CHANGE_ME_REDIS}@redis:6379/0
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
+      LINEAR_API_KEY: ${LINEAR_API_KEY:-}
+    volumes:
+      - autopr_data:/app/data
+      - autopr_logs:/app/logs
+      - ./configs:/app/config:ro
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - codeflow-network
+
+  # Prometheus for metrics collection (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: autopr-prometheus
+    restart: unless-stopped
+    profiles:
+      - monitoring
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--web.enable-lifecycle"
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_data:/prometheus
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - codeflow-network
+
+  # Grafana for metrics visualization (optional)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: autopr-grafana
+    restart: unless-stopped
+    profiles:
+      - monitoring
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - codeflow-network
+
+  # Nginx reverse proxy (optional, for production)
+  nginx:
+    image: nginx:alpine
+    container_name: autopr-nginx
+    restart: unless-stopped
+    profiles:
+      - production
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - codeflow-engine
+    networks:
+      - codeflow-network
+
+# Persistent volumes
+volumes:
+  autopr_data:
+    driver: local
+  autopr_logs:
+    driver: local
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+    profiles:
+      - monitoring
+  grafana_data:
+    driver: local
+    profiles:
+      - monitoring
+  nginx_logs:
+    driver: local
+    profiles:
+      - production
+
+# Networks
+networks:
+  codeflow-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

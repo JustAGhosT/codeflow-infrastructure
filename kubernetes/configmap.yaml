@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: autopr-config
+data:
+  AUTOPR_ENV: "production"
+  AUTOPR_LOG_LEVEL: "INFO"
