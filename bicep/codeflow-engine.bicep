@@ -14,7 +14,7 @@ param postgresLocation string = 'southafricanorth'
 param containerImage string = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
 
 @description('PostgreSQL administrator login username')
-param postgresLogin string = 'autopr'
+param postgresLogin string = 'codeflow'
 
 @secure()
 @description('PostgreSQL administrator password')
@@ -25,9 +25,9 @@ param postgresPassword string
 param redisPassword string
 
 @description('Custom domain name for the container app')
-param customDomain string = 'app.autopr.io'
+param customDomain string = 'app.codeflow.io'
 
-var resourceNamePrefix = '${environment}-autopr-${regionAbbr}'
+var resourceNamePrefix = '${environment}-codeflow-${regionAbbr}'
 var containerAppName = '${resourceNamePrefix}-app'
 var containerAppEnvName = '${resourceNamePrefix}-env'
 var postgresServerName = '${resourceNamePrefix}-postgres-${uniqueString(resourceGroup().id, postgresLocation)}'
@@ -143,7 +143,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
     template: {
       containers: [
         {
-          name: 'autopr-engine'
+          name: 'codeflow-engine'
           image: containerImage
           env: [
             {
@@ -168,7 +168,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
             }
             {
               name: 'POSTGRES_DB'
-              value: 'autopr'
+              value: 'codeflow'
             }
             {
               name: 'POSTGRES_USER'

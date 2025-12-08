@@ -1,16 +1,18 @@
 #!/bin/bash
-# Script to deploy AutoPR Engine infrastructure
+# Script to deploy CodeFlow Engine infrastructure
 # Creates resource group if it doesn't exist, then deploys the infrastructure
 
 set -e
 
-ENVIRONMENT=${1:-prod}
+ENVIRONMENT=${1:-dev}
 REGION_ABBR=${2:-san}
-LOCATION=${3:-"eastus2"}
+LOCATION=${3:-"southafricanorth"}
 POSTGRES_LOCATION=${4:-"southafricanorth"}
 CONTAINER_IMAGE=${5:-""}
-CUSTOM_DOMAIN=${6:-"app.autopr.io"}
-RESOURCE_GROUP="prod-rg-${REGION_ABBR}-autopr"
+CUSTOM_DOMAIN=${6:-"app.codeflow.io"}
+ORG_CODE=${7:-"nl"}
+PROJECT=${8:-"codeflow"}
+RESOURCE_GROUP="${ORG_CODE}-${ENVIRONMENT}-${PROJECT}-rg-${REGION_ABBR}"
 
 # Use placeholder if no image specified
 if [ -z "$CONTAINER_IMAGE" ]; then
@@ -21,7 +23,7 @@ if [ -z "$CONTAINER_IMAGE" ]; then
   CONTAINER_IMAGE="mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
 fi
 
-echo "Deploying AutoPR Engine infrastructure..."
+echo "Deploying CodeFlow Engine infrastructure..."
 echo "Environment: $ENVIRONMENT"
 echo "Region: $REGION_ABBR"
 echo "Location: $LOCATION"
@@ -40,7 +42,7 @@ else
 fi
 
 # Cleanup duplicate certificates to prevent deployment failures
-ENV_NAME="${ENVIRONMENT}-autopr-${REGION_ABBR}-env"
+ENV_NAME="${ENVIRONMENT}-codeflow-${REGION_ABBR}-env"
 echo ""
 echo "Checking for duplicate managed certificates..."
 if az containerapp env show -n "$ENV_NAME" -g "$RESOURCE_GROUP" &>/dev/null; then
@@ -69,7 +71,7 @@ echo ""
 # Generate passwords if not provided
 if [ -z "$POSTGRES_LOGIN" ]; then
   echo "Using default PostgreSQL login..."
-  POSTGRES_LOGIN="autopr"
+  POSTGRES_LOGIN="codeflow"
 fi
 
 if [ -z "$POSTGRES_PASSWORD" ]; then
@@ -98,9 +100,9 @@ chmod 600 "$CREDENTIALS_FILE"
 # Deploy the infrastructure
 echo "Deploying infrastructure..."
 az deployment group create \
-  --name autopr-engine \
+  --name codeflow-engine \
   --resource-group "$RESOURCE_GROUP" \
-  --template-file bicep/autopr-engine.bicep \
+  --template-file bicep/codeflow-engine.bicep \
   --parameters \
     environment="$ENVIRONMENT" \
     regionAbbr="$REGION_ABBR" \
