@@ -10,9 +10,9 @@ This repository contains CodeFlow-specific infrastructure definitions using Bice
 
 ## Infrastructure Components
 
-### 1. AutoPR Engine Application (`bicep/codeflow-engine.bicep`)
+### 1. CodeFlow Engine Application (`bicep/codeflow-engine.bicep`)
 
-Production-ready infrastructure for the AutoPR Engine application:
+Production-ready infrastructure for the CodeFlow Engine application:
 - **Azure Container Apps**: Serverless container hosting
 - **Azure Database for PostgreSQL**: Primary database
 - **Azure Cache for Redis**: Caching and session storage
@@ -75,9 +75,9 @@ All resources follow the pattern: `{env}-{resourcetype}-{region}-autopr`
 - **region**: Azure region abbreviation (san, eus, wus, etc.)
 
 Examples:
-- `prod-stapp-san-autopr` - Static Web App
-- `prod-autopr-san-app` - Container App
-- `prod-rg-san-autopr` - Resource Group
+- `prod-stapp-san-codeflow` - Static Web App
+- `prod-codeflow-san-app` - Container App
+- `prod-rg-san-codeflow` - Resource Group
 
 ## Repository Structure
 
