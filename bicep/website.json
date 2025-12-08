@@ -1,0 +1,98 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.39.26.7824",
+      "templateHash": "11930318282547927656"
+    }
+  },
+  "parameters": {
+    "environment": {
+      "type": "string",
+      "defaultValue": "prod",
+      "metadata": {
+        "description": "Environment name (prod, dev, staging)"
+      }
+    },
+    "regionAbbr": {
+      "type": "string",
+      "defaultValue": "san",
+      "metadata": {
+        "description": "Azure region abbreviation (e.g., san for South Africa North, eus for East US)"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "eastus2",
+      "metadata": {
+        "description": "Azure region full name"
+      }
+    },
+    "customDomain": {
+      "type": "string",
+      "defaultValue": "autopr.io",
+      "metadata": {
+        "description": "Custom domain name"
+      }
+    }
+  },
+  "variables": {
+    "resourceNamePrefix": "[format('{0}-stapp-{1}-autopr', parameters('environment'), parameters('regionAbbr'))]",
+    "staticWebAppName": "[variables('resourceNamePrefix')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/staticSites",
+      "apiVersion": "2022-03-01",
+      "name": "[variables('staticWebAppName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard",
+        "tier": "Standard"
+      },
+      "properties": {
+        "repositoryUrl": "https://github.com/JustAGhosT/codeflow-engine",
+        "branch": "main",
+        "buildProperties": {
+          "appLocation": "website",
+          "apiLocation": "",
+          "appArtifactLocation": "out",
+          "outputLocation": "out"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Web/staticSites/customDomains",
+      "apiVersion": "2022-03-01",
+      "name": "[format('{0}/{1}', variables('staticWebAppName'), parameters('customDomain'))]",
+      "properties": {},
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/staticSites', variables('staticWebAppName'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "staticWebAppName": {
+      "type": "string",
+      "value": "[variables('staticWebAppName')]"
+    },
+    "staticWebAppUrl": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Web/staticSites', variables('staticWebAppName')), '2022-03-01').defaultHostname]"
+    },
+    "resourceGroupName": {
+      "type": "string",
+      "value": "[resourceGroup().name]"
+    },
+    "customDomain": {
+      "type": "string",
+      "value": "[parameters('customDomain')]"
+    },
+    "customDomainValidationToken": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Web/staticSites', variables('staticWebAppName'))]"
+    }
+  }
+}
