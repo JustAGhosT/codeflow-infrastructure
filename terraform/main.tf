@@ -7,8 +7,8 @@
   }
 
   backend "azurerm" {
-    resource_group_name  = "codeflow-rg"
-    storage_account_name = "codeflowtfstate"
+    resource_group_name  = "nl-prod-codeflow-rg-san"
+    storage_account_name = "nlprodcodeflowtfstate"
     container_name       = "tfstate"
     key                  = "terraform.tfstate"
   }
@@ -35,7 +35,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   name                = var.aks_cluster_name
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  dns_prefix          = "codeflow"
+  dns_prefix          = "nl-codeflow"
 
   default_node_pool {
     name       = "default"
@@ -53,7 +53,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
 }
 
 resource "azurerm_postgresql_server" "postgres" {
-  name                = "codeflow-postgres"
+  name                = "nl-prod-codeflow-postgres-san"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 
@@ -71,7 +71,7 @@ resource "azurerm_postgresql_server" "postgres" {
 }
 
 resource "azurerm_redis_cache" "redis" {
-  name                = "codeflow-redis"
+  name                = "nl-prod-codeflow-redis-san"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   capacity            = 1
@@ -82,7 +82,7 @@ resource "azurerm_redis_cache" "redis" {
 }
 
 resource "azurerm_storage_account" "tfstate" {
-  name                     = "codeflowtfstate"
+  name                     = "nlprodcodeflowtfstate"
   resource_group_name      = azurerm_resource_group.rg.name
   location                 = azurerm_resource_group.rg.location
   account_tier             = "Standard"

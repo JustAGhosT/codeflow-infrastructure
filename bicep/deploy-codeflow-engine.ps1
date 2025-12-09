@@ -180,6 +180,8 @@ az deployment group create `
     --resource-group $ResourceGroup `
     --template-file $bicepFile `
     --parameters `
+    orgCode=$OrgCode `
+    project=$Project `
     environment=$Environment `
     regionAbbr=$RegionAbbr `
     location=$Location `

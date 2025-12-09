@@ -10,7 +10,14 @@ param location string = 'eastus2'
 @description('Custom domain name')
 param customDomain string = 'codeflow.io'
 
-var resourceNamePrefix = '${environment}-stapp-${regionAbbr}-codeflow'
+@description('Organization code (e.g., nl)')
+param orgCode string = 'nl'
+
+@description('Project name (e.g., codeflow)')
+param project string = 'codeflow'
+
+// Naming pattern: org-env-proj-type-region
+var resourceNamePrefix = '${orgCode}-${environment}-${project}-stapp-${regionAbbr}'
 var staticWebAppName = resourceNamePrefix
 
 resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {

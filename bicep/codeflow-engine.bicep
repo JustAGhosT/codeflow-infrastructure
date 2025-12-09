@@ -27,7 +27,14 @@ param redisPassword string
 @description('Custom domain name for the container app. Leave empty to skip custom domain configuration.')
 param customDomain string = ''
 
-var resourceNamePrefix = '${environment}-codeflow-${regionAbbr}'
+@description('Organization code (e.g., nl)')
+param orgCode string = 'nl'
+
+@description('Project name (e.g., codeflow)')
+param project string = 'codeflow'
+
+// Naming pattern: org-env-proj-type-region
+var resourceNamePrefix = '${orgCode}-${environment}-${project}-${regionAbbr}'
 var containerAppName = '${resourceNamePrefix}-app'
 var containerAppEnvName = '${resourceNamePrefix}-env'
 var postgresServerName = '${resourceNamePrefix}-postgres-${uniqueString(resourceGroup().id, postgresLocation)}'

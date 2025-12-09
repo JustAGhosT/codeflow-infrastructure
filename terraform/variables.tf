@@ -1,7 +1,7 @@
 ﻿variable "resource_group_name" {
   type        = string
-  description = "The name of the Azure Resource Group."
-  default     = "codeflow-rg"
+  description = "The name of the Azure Resource Group. Pattern: org-env-proj-rg-region (e.g., nl-prod-codeflow-rg-san)"
+  default     = "nl-prod-codeflow-rg-san"
 }
 
 variable "location" {
@@ -12,14 +12,14 @@ variable "location" {
 
 variable "aks_cluster_name" {
   type        = string
-  description = "The name of the AKS cluster."
-  default     = "codeflow-aks"
+  description = "The name of the AKS cluster. Pattern: org-env-proj-aks-region (e.g., nl-prod-codeflow-aks-san)"
+  default     = "nl-prod-codeflow-aks-san"
 }
 
 variable "acr_name" {
   type        = string
-  description = "The name of the Azure Container Registry."
-  default     = "codeflowacr"
+  description = "The name of the Azure Container Registry. Pattern: orgprojacr (e.g., nlprodcodeflowacr)"
+  default     = "nlprodcodeflowacr"
 }
 
 variable "postgres_password" {

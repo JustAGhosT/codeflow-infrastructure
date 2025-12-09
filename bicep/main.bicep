@@ -1,8 +1,8 @@
 @description('Legacy infrastructure template - assumes resource group already exists. Deploy at resource group scope: az deployment group create --resource-group <rg-name> --template-file main.bicep')
 
 param location string = 'East US'
-param acrName string = 'codeflowacr'
-param aksClusterName string = 'codeflow-aks'
+param acrName string = 'nl-codeflowacr'
+param aksClusterName string = 'nl-codeflow-aks'
 
 @description('PostgreSQL administrator login username')
 param postgresLogin string = 'codeflow'
@@ -28,7 +28,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2022-03-01' = {
     type: 'SystemAssigned'
   }
   properties: {
-    dnsPrefix: 'codeflow'
+    dnsPrefix: 'nl-codeflow'
     agentPoolProfiles: [
       {
         name: 'default'
@@ -41,7 +41,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2022-03-01' = {
 }
 
 resource postgres 'Microsoft.DBforPostgreSQL/servers@2017-12-01' = {
-  name: 'codeflow-postgres'
+  name: 'nl-codeflow-postgres'
   location: location
   sku: {
     name: 'B_Gen5_1'
@@ -58,7 +58,7 @@ resource postgres 'Microsoft.DBforPostgreSQL/servers@2017-12-01' = {
 }
 
 resource redis 'Microsoft.Cache/Redis@2020-06-01' = {
-  name: 'codeflow-redis'
+  name: 'nl-codeflow-redis'
   location: location
   properties: {
     sku: {
