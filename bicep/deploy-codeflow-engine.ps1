@@ -40,7 +40,7 @@ param(
     [string]$Location = "southafricanorth",
     [string]$PostgresLocation = "southafricanorth",
     [string]$ContainerImage = "",
-    [string]$CustomDomain = "app.codeflow.io",
+    [string]$CustomDomain = "",
     [string]$OrgCode = "nl",
     [string]$Project = "codeflow"
 )

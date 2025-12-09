@@ -24,8 +24,8 @@ param postgresPassword string
 @description('Redis password')
 param redisPassword string
 
-@description('Custom domain name for the container app')
-param customDomain string = 'app.codeflow.io'
+@description('Custom domain name for the container app. Leave empty to skip custom domain configuration.')
+param customDomain string = ''
 
 var resourceNamePrefix = '${environment}-codeflow-${regionAbbr}'
 var containerAppName = '${resourceNamePrefix}-app'
@@ -122,12 +122,12 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
         targetPort: 8080
         allowInsecure: false
         transport: 'auto'
-        customDomains: [
+        customDomains: !empty(customDomain) ? [
           {
             name: customDomain
             bindingType: 'Auto'
           }
-        ]
+        ] : []
       }
       secrets: [
         {
