@@ -69,7 +69,8 @@ if (-not $rgExists) {
     Write-Host "  Creating resource group..." -ForegroundColor Gray
     az group create --name $ResourceGroup --location $Location --output none
     Write-Host "  ✓ Resource group created" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "  ✓ Resource group already exists" -ForegroundColor Green
 }
 Write-Host ""
@@ -86,12 +87,12 @@ if ([string]::IsNullOrEmpty($ContainerImage)) {
 # Generate passwords if not provided
 if ([string]::IsNullOrEmpty($env:POSTGRES_PASSWORD)) {
     Write-Host "Generating PostgreSQL password..." -ForegroundColor Yellow
-    $env:POSTGRES_PASSWORD = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 32 | ForEach-Object {[char]$_})
+    $env:POSTGRES_PASSWORD = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 32 | ForEach-Object { [char]$_ })
 }
 
 if ([string]::IsNullOrEmpty($env:REDIS_PASSWORD)) {
     Write-Host "Generating Redis password..." -ForegroundColor Yellow
-    $env:REDIS_PASSWORD = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 32 | ForEach-Object {[char]$_})
+    $env:REDIS_PASSWORD = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 32 | ForEach-Object { [char]$_ })
 }
 
 $PostgresLogin = "codeflow"
@@ -99,11 +100,11 @@ $PostgresLogin = "codeflow"
 # Save credentials securely
 $CredentialsFile = ".credentials-$ResourceGroup.json"
 $credentials = @{
-    resource_group = $ResourceGroup
-    postgres_login = $PostgresLogin
+    resource_group    = $ResourceGroup
+    postgres_login    = $PostgresLogin
     postgres_password = $env:POSTGRES_PASSWORD
-    redis_password = $env:REDIS_PASSWORD
-    created_at = (Get-Date -Format "o")
+    redis_password    = $env:REDIS_PASSWORD
+    created_at        = (Get-Date -Format "o")
 } | ConvertTo-Json
 
 $credentials | Out-File -FilePath $CredentialsFile -Encoding utf8 -NoNewline
@@ -127,15 +128,15 @@ az deployment group create `
     --resource-group $ResourceGroup `
     --template-file $bicepFile `
     --parameters `
-        environment=$Environment `
-        regionAbbr=$RegionAbbr `
-        location=$Location `
-        postgresLocation=$PostgresLocation `
-        customDomain=$CustomDomain `
-        containerImage=$ContainerImage `
-        postgresLogin=$PostgresLogin `
-        postgresPassword=$env:POSTGRES_PASSWORD `
-        redisPassword=$env:REDIS_PASSWORD `
+    environment=$Environment `
+    regionAbbr=$RegionAbbr `
+    location=$Location `
+    postgresLocation=$PostgresLocation `
+    customDomain=$CustomDomain `
+    containerImage=$ContainerImage `
+    postgresLogin=$PostgresLogin `
+    postgresPassword=$env:POSTGRES_PASSWORD `
+    redisPassword=$env:REDIS_PASSWORD `
     --output json | Out-File -FilePath "deployment-output.json" -Encoding utf8
 
 if ($LASTEXITCODE -eq 0) {
@@ -153,7 +154,8 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "1. Add DNS CNAME record for $CustomDomain pointing to the Container App URL above" -ForegroundColor White
     Write-Host "2. Wait for DNS propagation (typically 15-30 minutes)" -ForegroundColor White
     Write-Host "3. Azure will automatically provision the SSL certificate" -ForegroundColor White
-} else {
+}
+else {
     Write-Host "✗ Deployment failed!" -ForegroundColor Red
     exit 1
 }
