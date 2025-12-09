@@ -99,13 +99,6 @@ $PostgresLogin = "codeflow"
 
 # Save credentials securely
 $CredentialsFile = ".credentials-$ResourceGroup.json"
-
-# Remove existing file if it exists
-if (Test-Path $CredentialsFile) {
-    Write-Host "  Removing existing credentials file..." -ForegroundColor Gray
-    Remove-Item $CredentialsFile -Force -ErrorAction SilentlyContinue
-}
-
 $credentials = @{
     resource_group    = $ResourceGroup
     postgres_login    = $PostgresLogin
@@ -114,22 +107,9 @@ $credentials = @{
     created_at        = (Get-Date -Format "o")
 } | ConvertTo-Json
 
-try {
-    $credentials | Out-File -FilePath $CredentialsFile -Encoding utf8 -NoNewline -Force
-    # Try to hide the file (may fail on some systems, that's OK)
-    try {
-        $file = Get-Item $CredentialsFile -Force
-        $file.Attributes = $file.Attributes -bor [System.IO.FileAttributes]::Hidden
-    } catch {
-        # Ignore if we can't hide the file
-    }
-} catch {
-    Write-Host "  ⚠ Warning: Could not save credentials file: $_" -ForegroundColor Yellow
-    Write-Host "  Credentials are:" -ForegroundColor Yellow
-    Write-Host "    PostgreSQL Password: $env:POSTGRES_PASSWORD" -ForegroundColor Gray
-    Write-Host "    Redis Password: $env:REDIS_PASSWORD" -ForegroundColor Gray
-    Write-Host "  Please save these securely!" -ForegroundColor Yellow
-}
+$credentials | Out-File -FilePath $CredentialsFile -Encoding utf8 -NoNewline
+$file = Get-Item $CredentialsFile
+$file.Attributes = $file.Attributes -bor [System.IO.FileAttributes]::Hidden
 
 Write-Host "⚠️  IMPORTANT: Credentials saved to $CredentialsFile" -ForegroundColor Yellow
 Write-Host "   Store them in a secure secrets manager (Azure Key Vault, etc.)" -ForegroundColor Gray
@@ -164,18 +144,26 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host ""
     
     # Get Container App URL
-    $output = Get-Content "deployment-output.json" | ConvertFrom-Json
-    $containerAppUrl = $output.properties.outputs.containerAppUrl.value
-    
-    Write-Host "Container App URL: $containerAppUrl" -ForegroundColor Cyan
-    Write-Host "Custom Domain: $CustomDomain" -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host "Next steps:" -ForegroundColor Yellow
-    Write-Host "1. Add DNS CNAME record for $CustomDomain pointing to the Container App URL above" -ForegroundColor White
-    Write-Host "2. Wait for DNS propagation (typically 15-30 minutes)" -ForegroundColor White
-    Write-Host "3. Azure will automatically provision the SSL certificate" -ForegroundColor White
-}
-else {
+    if (Test-Path "deployment-output.json") {
+        $output = Get-Content "deployment-output.json" | ConvertFrom-Json
+        $containerAppUrl = $output.properties.outputs.containerAppUrl.value
+        
+        Write-Host "Container App URL: $containerAppUrl" -ForegroundColor Cyan
+        
+        if (![string]::IsNullOrEmpty($CustomDomain)) {
+            Write-Host "Custom Domain: $CustomDomain" -ForegroundColor Cyan
+            Write-Host ""
+            Write-Host "Next steps:" -ForegroundColor Yellow
+            Write-Host "1. Add DNS CNAME record for $CustomDomain pointing to the Container App URL above" -ForegroundColor White
+            Write-Host "2. Wait for DNS propagation (typically 15-30 minutes)" -ForegroundColor White
+            Write-Host "3. Azure will automatically provision the SSL certificate" -ForegroundColor White
+        } else {
+            Write-Host ""
+            Write-Host "Note: No custom domain configured. Container App is accessible via the URL above." -ForegroundColor Gray
+            Write-Host "To add a custom domain later, redeploy with -CustomDomain parameter." -ForegroundColor Gray
+        }
+    }
+} else {
     Write-Host "✗ Deployment failed!" -ForegroundColor Red
     exit 1
 }
