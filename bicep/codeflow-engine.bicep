@@ -226,7 +226,9 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
 // Managed certificate must be created AFTER the container app
 // because Azure requires the custom hostname to be added to a container app
 // before a managed certificate can be created for it
-resource managedCertificate 'Microsoft.App/managedEnvironments/managedCertificates@2024-10-02-preview' = {
+// Only create certificate if custom domain is provided
+@description('Managed certificate for custom domain (only created if customDomain is provided)')
+resource managedCertificate 'Microsoft.App/managedEnvironments/managedCertificates@2024-10-02-preview' = if (!empty(customDomain)) {
   parent: containerAppEnv
   name: 'cert-${replace(customDomain, '.', '-')}'
   location: location
