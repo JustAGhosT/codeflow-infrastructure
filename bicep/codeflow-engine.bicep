@@ -147,7 +147,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-10-02-preview' = {
           image: containerImage
           env: [
             {
-              name: 'AUTOPR_ENV'
+              name: 'ENVIRONMENT'
               value: environment
             }
             {
