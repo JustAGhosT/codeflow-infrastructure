@@ -99,6 +99,13 @@ $PostgresLogin = "codeflow"
 
 # Save credentials securely
 $CredentialsFile = ".credentials-$ResourceGroup.json"
+
+# Remove existing file if it exists
+if (Test-Path $CredentialsFile) {
+    Write-Host "  Removing existing credentials file..." -ForegroundColor Gray
+    Remove-Item $CredentialsFile -Force -ErrorAction SilentlyContinue
+}
+
 $credentials = @{
     resource_group    = $ResourceGroup
     postgres_login    = $PostgresLogin
@@ -107,9 +114,22 @@ $credentials = @{
     created_at        = (Get-Date -Format "o")
 } | ConvertTo-Json
 
-$credentials | Out-File -FilePath $CredentialsFile -Encoding utf8 -NoNewline
-$file = Get-Item $CredentialsFile
-$file.Attributes = $file.Attributes -bor [System.IO.FileAttributes]::Hidden
+try {
+    $credentials | Out-File -FilePath $CredentialsFile -Encoding utf8 -NoNewline -Force
+    # Try to hide the file (may fail on some systems, that's OK)
+    try {
+        $file = Get-Item $CredentialsFile -Force
+        $file.Attributes = $file.Attributes -bor [System.IO.FileAttributes]::Hidden
+    } catch {
+        # Ignore if we can't hide the file
+    }
+} catch {
+    Write-Host "  ⚠ Warning: Could not save credentials file: $_" -ForegroundColor Yellow
+    Write-Host "  Credentials are:" -ForegroundColor Yellow
+    Write-Host "    PostgreSQL Password: $env:POSTGRES_PASSWORD" -ForegroundColor Gray
+    Write-Host "    Redis Password: $env:REDIS_PASSWORD" -ForegroundColor Gray
+    Write-Host "  Please save these securely!" -ForegroundColor Yellow
+}
 
 Write-Host "⚠️  IMPORTANT: Credentials saved to $CredentialsFile" -ForegroundColor Yellow
 Write-Host "   Store them in a secure secrets manager (Azure Key Vault, etc.)" -ForegroundColor Gray
