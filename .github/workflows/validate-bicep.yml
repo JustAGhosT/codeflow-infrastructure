@@ -1,0 +1,37 @@
+name: Validate Bicep
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'bicep/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'bicep/**'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate Bicep Templates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Bicep CLI
+        uses: azure/setup-bicep@v1
+      
+      - name: Validate Bicep files
+        run: |
+          find bicep -name "*.bicep" -type f | while read file; do
+            echo "Validating $file"
+            az bicep build --file "$file" --no-restore || exit 1
+          done
+      
+      - name: Lint Bicep files
+        run: |
+          find bicep -name "*.bicep" -type f | while read file; do
+            echo "Linting $file"
+            az bicep build --file "$file" --no-restore || exit 1
+          done
+
