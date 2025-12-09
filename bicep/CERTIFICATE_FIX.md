@@ -1,4 +1,4 @@
-# Certificate Validation Error Fix
+﻿# Certificate Validation Error Fix
 
 ## Problem
 
@@ -8,7 +8,7 @@ The Azure deployment was failing with the following error:
 ERROR: "code": "InvalidTemplateDeployment", "message": "The template deployment 'codeflow-engine' is not valid according to the validation procedure."
 
 Inner Errors: 
-"code": "CertificateMissing", "message": "CertificateId property is missing for customDomain 'app.autopr.io'."
+"code": "CertificateMissing", "message": "CertificateId property is missing for customDomain 'app.codeflow.io'."
 ```
 
 ## Root Cause
@@ -69,7 +69,7 @@ The `certificateId` property now references the managed certificate resource.
 Before deploying with a custom domain:
 
 1. **DNS Configuration**: Ensure your DNS has a CNAME record pointing to the Container App FQDN
-   - Example: `CNAME app.autopr.io -> prod-autopr-san-app.eastus2.azurecontainerapps.io`
+   - Example: `CNAME app.codeflow.io -> prod-codeflow-san-app.eastus2.azurecontainerapps.io`
 2. **Initial Deployment**: If DNS is not yet configured, you have two options:
    - Deploy without the custom domain first, configure DNS, then redeploy
    - Configure DNS before the first deployment (recommended)
@@ -95,13 +95,13 @@ To verify the fix works:
 # Deploy the infrastructure
 az deployment group create \
   --name codeflow-engine \
-  --resource-group prod-rg-san-autopr \
+  --resource-group prod-rg-san-codeflow \
   --template-file infrastructure/bicep/codeflow-engine.bicep \
   --parameters \
     environment=prod \
     regionAbbr=san \
     location=eastus2 \
-    customDomain=app.autopr.io \
+    customDomain=app.codeflow.io \
     containerImage=ghcr.io/justaghost/codeflow-engine:latest \
     postgresLogin="<login>" \
     postgresPassword="<password>" \
@@ -109,8 +109,8 @@ az deployment group create \
 
 # Check certificate status
 az containerapp show \
-  --name prod-autopr-san-app \
-  --resource-group prod-rg-san-autopr \
+  --name prod-codeflow-san-app \
+  --resource-group prod-rg-san-codeflow \
   --query "properties.configuration.ingress.customDomains"
 ```
 

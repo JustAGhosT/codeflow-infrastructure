@@ -1,11 +1,11 @@
-# Next Steps After Successful Deployment
+﻿# Next Steps After Successful Deployment
 
-## ✅ Deployment Complete
+## âœ… Deployment Complete
 
 Your Static Web App has been successfully deployed:
-- **Name**: `prod-stapp-san-autopr`
+- **Name**: `prod-stapp-san-codeflow`
 - **URL**: `witty-bush-07121230f.3.azurestaticapps.net`
-- **Resource Group**: `prod-rg-san-autopr`
+- **Resource Group**: `prod-rg-san-codeflow`
 - **Location**: `eastus2`
 
 ## 1. Get Deployment Token for GitHub Actions
@@ -14,28 +14,28 @@ You need to retrieve the deployment token and add it as a GitHub secret:
 
 ```bash
 az staticwebapp secrets list \
-  --name prod-stapp-san-autopr \
-  --resource-group prod-rg-san-autopr \
+  --name prod-stapp-san-codeflow \
+  --resource-group prod-rg-san-codeflow \
   --query "properties.apiKey" \
   --output tsv
 ```
 
 Copy the output and add it as `AZURE_STATIC_WEB_APPS_API_TOKEN` in your GitHub repository secrets:
 1. Go to your GitHub repository
-2. Settings → Secrets and variables → Actions
+2. Settings â†’ Secrets and variables â†’ Actions
 3. New repository secret
 4. Name: `AZURE_STATIC_WEB_APPS_API_TOKEN`
 5. Value: (paste the token from above)
 
-## 2. Configure Custom Domain (autopr.io)
+## 2. Configure Custom Domain (codeflow.io)
 
 ### Step 1: Get Domain Validation Token
 
 ```bash
 az staticwebapp hostname show \
-  --name prod-stapp-san-autopr \
-  --resource-group prod-rg-san-autopr \
-  --hostname autopr.io
+  --name prod-stapp-san-codeflow \
+  --resource-group prod-rg-san-codeflow \
+  --hostname codeflow.io
 ```
 
 This will return a validation token that you need to add as a DNS TXT record.
@@ -44,7 +44,7 @@ This will return a validation token that you need to add as a DNS TXT record.
 
 Add a TXT record to your domain provider:
 - **Record Type**: TXT
-- **Name**: `asuid.autopr.io` (or as specified by Azure)
+- **Name**: `asuid.codeflow.io` (or as specified by Azure)
 - **Value**: (the validation token from Step 1)
 - **TTL**: 3600 (or default)
 
@@ -54,22 +54,22 @@ Azure will automatically validate the domain (usually takes 5-10 minutes). You c
 
 ```bash
 az staticwebapp hostname list \
-  --name prod-stapp-san-autopr \
-  --resource-group prod-rg-san-autopr
+  --name prod-stapp-san-codeflow \
+  --resource-group prod-rg-san-codeflow
 ```
 
 ### Step 4: Add CNAME Record (if needed)
 
 After validation, you may need to add a CNAME record:
 - **Record Type**: CNAME
-- **Name**: `autopr.io` (or `www.autopr.io`)
+- **Name**: `codeflow.io` (or `www.codeflow.io`)
 - **Value**: `witty-bush-07121230f.3.azurestaticapps.net`
 
 ## 3. Test the Deployment
 
 Visit your Static Web App:
 - **Default URL**: https://witty-bush-07121230f.3.azurestaticapps.net
-- **Custom Domain** (after DNS setup): https://autopr.io
+- **Custom Domain** (after DNS setup): https://codeflow.io
 
 ## 4. Verify GitHub Actions Integration
 
@@ -86,8 +86,8 @@ The GitHub Actions workflow will automatically build and deploy your Next.js sit
 ## 5. Monitor Deployment
 
 Check deployment status in:
-- **Azure Portal**: Resource Group → Static Web App → Deployment history
-- **GitHub Actions**: Repository → Actions tab
+- **Azure Portal**: Resource Group â†’ Static Web App â†’ Deployment history
+- **GitHub Actions**: Repository â†’ Actions tab
 
 ## Troubleshooting
 

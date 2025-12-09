@@ -1,17 +1,17 @@
-# ✅ Certificate Issue - RESOLVED
+﻿# âœ… Certificate Issue - RESOLVED
 
 ## Your Question:
 > "can you sort the certificate or do i need to give you a linkn?"
 
 ## Answer
-**No certificate link needed! The system automatically sorts (manages) certificates for you!** 🎉
+**No certificate link needed! The system automatically sorts (manages) certificates for you!** ðŸŽ‰
 
 Azure Container Apps now automatically provisions and manages free SSL/TLS certificates for your custom domain. You don't need to:
 
-- ❌ Buy a certificate
-- ❌ Upload a certificate
-- ❌ Provide a certificate link
-- ❌ Manually renew certificates
+- âŒ Buy a certificate
+- âŒ Upload a certificate
+- âŒ Provide a certificate link
+- âŒ Manually renew certificates
 
 ## What Changed?
 
@@ -34,7 +34,7 @@ git pull origin main
 Add a CNAME record pointing your custom domain to the Container App:
 ```
 Type: CNAME
-Name: app.autopr.io
+Name: app.codeflow.io
 Value: <Container-App-FQDN>  # Get this from deployment output
 ```
 
@@ -43,15 +43,15 @@ Value: <Container-App-FQDN>  # Get this from deployment output
 ```bash
 az deployment group create \
   --name codeflow-engine \
-  --resource-group prod-rg-san-autopr \
+  --resource-group prod-rg-san-codeflow \
   --template-file infrastructure/bicep/codeflow-engine.bicep \
   --parameters \
     environment=prod \
     regionAbbr=san \
     location=eastus2 \
-    customDomain=app.autopr.io \
+    customDomain=app.codeflow.io \
     containerImage=ghcr.io/justaghost/codeflow-engine:latest \
-    postgresLogin="autopr" \
+    postgresLogin="codeflow" \
     postgresPassword="<your-password>" \
     redisPassword="<your-password>"
 ```
@@ -72,9 +72,9 @@ If you still see the `CertificateMissing` error after updating your code:
 ## More Information
 
 - **Detailed FAQ**: [FAQ.md](./FAQ.md) - All questions about certificates
-- **Deployment Guide**: [README-AUTOPR-ENGINE.md](./README-AUTOPR-ENGINE.md) - Complete setup guide
+- **Deployment Guide**: [README-codeflow-ENGINE.md](./README-codeflow-ENGINE.md) - Complete setup guide
 - **Technical Details**: [CERTIFICATE_FIX.md](./CERTIFICATE_FIX.md) - Deep dive into the fix
 
 ---
 
-**Summary**: The certificate is automatically sorted (managed) by Azure. No link needed! Just update your code, configure DNS, and deploy. ✨
+**Summary**: The certificate is automatically sorted (managed) by Azure. No link needed! Just update your code, configure DNS, and deploy. âœ¨

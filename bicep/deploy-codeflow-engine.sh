@@ -1,4 +1,4 @@
-#!/bin/bash
+deploy#!/bin/bash
 # Script to deploy CodeFlow Engine infrastructure
 # Creates resource group if it doesn't exist, then deploys the infrastructure
 

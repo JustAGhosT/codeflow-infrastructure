@@ -1,4 +1,4 @@
-@description('Environment name (prod, dev, staging)')
+﻿@description('Environment name (prod, dev, staging)')
 param environment string = 'prod'
 
 @description('Azure region abbreviation (e.g., san for South Africa North, eus for East US)')
@@ -8,9 +8,9 @@ param regionAbbr string = 'san'
 param location string = 'eastus2'
 
 @description('Custom domain name')
-param customDomain string = 'autopr.io'
+param customDomain string = 'codeflow.io'
 
-var resourceNamePrefix = '${environment}-stapp-${regionAbbr}-autopr'
+var resourceNamePrefix = '${environment}-stapp-${regionAbbr}-codeflow'
 var staticWebAppName = resourceNamePrefix
 
 resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
@@ -21,7 +21,7 @@ resource staticWebApp 'Microsoft.Web/staticSites@2022-03-01' = {
     tier: 'Standard'
   }
   properties: {
-    repositoryUrl: 'https://github.com/JustAGhosT/autopr-engine'
+    repositoryUrl: 'https://github.com/JustAGhosT/codeflow-engine'
     branch: 'main'
     buildProperties: {
       appLocation: 'website'

@@ -1,4 +1,4 @@
-{
+﻿{
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
@@ -12,10 +12,10 @@
       "value": "eastus2"
     },
     "customDomain": {
-      "value": "app.autopr.io"
+      "value": "app.codeflow.io"
     },
     "containerImage": {
-      "value": "ghcr.io/justaghost/autopr-engine:latest"
+      "value": "ghcr.io/justaghost/codeflow-engine:latest"
     },
     "postgresPassword": {
       "reference": {

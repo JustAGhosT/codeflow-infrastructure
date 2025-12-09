@@ -1,4 +1,4 @@
-{
+﻿{
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "metadata": {
@@ -18,15 +18,15 @@
     },
     "acrName": {
       "type": "string",
-      "defaultValue": "autopracr"
+      "defaultValue": "codeflowacr"
     },
     "aksClusterName": {
       "type": "string",
-      "defaultValue": "autopr-aks"
+      "defaultValue": "codeflow-aks"
     },
     "postgresLogin": {
       "type": "string",
-      "defaultValue": "autopr",
+      "defaultValue": "codeflow",
       "metadata": {
         "description": "PostgreSQL administrator login username"
       }
@@ -57,7 +57,7 @@
         "type": "SystemAssigned"
       },
       "properties": {
-        "dnsPrefix": "autopr",
+        "dnsPrefix": "codeflow",
         "agentPoolProfiles": [
           {
             "name": "default",
@@ -71,7 +71,7 @@
     {
       "type": "Microsoft.DBforPostgreSQL/servers",
       "apiVersion": "2017-12-01",
-      "name": "autopr-postgres",
+      "name": "codeflow-postgres",
       "location": "[parameters('location')]",
       "sku": {
         "name": "B_Gen5_1",
@@ -89,7 +89,7 @@
     {
       "type": "Microsoft.Cache/redis",
       "apiVersion": "2020-06-01",
-      "name": "autopr-redis",
+      "name": "codeflow-redis",
       "location": "[parameters('location')]",
       "properties": {
         "sku": {

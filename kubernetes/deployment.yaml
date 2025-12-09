@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+﻿apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: codeflow-engine
@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: codeflow-engine
-        image: autopracr.azurecr.io/codeflow-engine:latest
+        image: codeflowacr.azurecr.io/codeflow-engine:latest
         ports:
         - containerPort: 8080
         readinessProbe:
@@ -31,9 +31,9 @@ spec:
           periodSeconds: 20
         envFrom:
         - configMapRef:
-            name: autopr-config
+            name: codeflow-config
         - secretRef:
-            name: autopr-secrets
+            name: codeflow-secrets
         resources:
           requests:
             cpu: "250m"
@@ -45,21 +45,21 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: autopr-worker
+  name: codeflow-worker
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: autopr-worker
+      app: codeflow-worker
   template:
     metadata:
       labels:
-        app: autopr-worker
+        app: codeflow-worker
     spec:
       containers:
-      - name: autopr-worker
-        image: autopracr.azurecr.io/codeflow-engine:latest
-        command: ["autopr-worker"]
+      - name: codeflow-worker
+        image: codeflowacr.azurecr.io/codeflow-engine:latest
+        command: ["codeflow-worker"]
         readinessProbe:
           exec:
             command:
@@ -74,9 +74,9 @@ spec:
           periodSeconds: 20
         envFrom:
         - configMapRef:
-            name: autopr-config
+            name: codeflow-config
         - secretRef:
-            name: autopr-secrets
+            name: codeflow-secrets
         resources:
           requests:
             cpu: "250m"

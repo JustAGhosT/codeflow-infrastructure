@@ -1,4 +1,4 @@
-# AutoPR Engine Prometheus Configuration
+﻿# CodeFlow Engine Prometheus Configuration
 
 global:
   scrape_interval: 15s
@@ -24,17 +24,17 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
-  # AutoPR Engine application metrics
+  # CodeFlow Engine application metrics
   - job_name: 'codeflow-engine'
     static_configs:
       - targets: ['codeflow-engine:8080']
     metrics_path: '/metrics'
     scrape_interval: 10s
 
-  # AutoPR Worker metrics
-  - job_name: 'autopr-worker'
+  # CodeFlow Worker metrics
+  - job_name: 'codeflow-worker'
     static_configs:
-      - targets: ['autopr-worker:8080']
+      - targets: ['codeflow-worker:8080']
     metrics_path: '/metrics'
     scrape_interval: 10s
 

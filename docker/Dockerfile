@@ -1,4 +1,4 @@
-# Multi-stage build for AutoPR Engine
+﻿# Multi-stage build for CODEFLOW Engine
 # Stage 1: Build environment
 FROM python:3.13-slim AS builder
 
@@ -50,13 +50,13 @@ FROM python:3.13-slim AS production
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PATH="/app/.local/bin:$PATH" \
-    AUTOPR_ENV=production \
+    CODEFLOW_ENV=production \
     # Poetry configuration - disable virtualenv creation since deps are in site-packages
     POETRY_VIRTUALENVS_CREATE=false \
-    POETRY_CACHE_DIR=/home/autopr/.cache/pypoetry
+    POETRY_CACHE_DIR=/home/CODEFLOW/.cache/pypoetry
 
 # Create non-root user for security with home directory
-RUN groupadd -r autopr && useradd -r -g autopr -m -d /home/autopr autopr
+RUN groupadd -r CODEFLOW && useradd -r -g CODEFLOW -m -d /home/CODEFLOW CODEFLOW
 
 # Install runtime system dependencies
 RUN apt-get update && apt-get install -y \
@@ -68,8 +68,8 @@ RUN apt-get update && apt-get install -y \
 
 # Create application directories and ensure home directory ownership
 RUN mkdir -p /app /app/logs /app/data /app/config && \
-    chown -R autopr:autopr /app && \
-    chown -R autopr:autopr /home/autopr
+    chown -R CODEFLOW:CODEFLOW /app && \
+    chown -R CODEFLOW:CODEFLOW /home/CODEFLOW
 
 # Set working directory
 WORKDIR /app
@@ -80,7 +80,7 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --from=builder /app /app
 
 # Switch to non-root user
-USER autopr
+USER CODEFLOW
 
 # Expose port for web server
 EXPOSE 8080
@@ -90,11 +90,11 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl --fail http://localhost:8080/health || exit 1
 
 # Default environment variables
-ENV AUTOPR_HOST=0.0.0.0 \
-    AUTOPR_PORT=8080 \
-    AUTOPR_WORKERS=1 \
-    AUTOPR_LOG_LEVEL=INFO \
-    AUTOPR_CONFIG_FILE=/app/config/autopr.yml
+ENV CODEFLOW_HOST=0.0.0.0 \
+    CODEFLOW_PORT=8080 \
+    CODEFLOW_WORKERS=1 \
+    CODEFLOW_LOG_LEVEL=INFO \
+    CODEFLOW_CONFIG_FILE=/app/config/codeflow.yml
 
 # Volume for persistent data
 VOLUME ["/app/data", "/app/logs", "/app/config"]
@@ -103,13 +103,13 @@ VOLUME ["/app/data", "/app/logs", "/app/config"]
 ENTRYPOINT ["poetry", "run"]
 
 # Default command
-CMD ["autopr-server"]
+CMD ["codeflow-server"]
 
 # Labels for metadata
-LABEL org.opencontainers.image.title="AutoPR Engine" \
+LABEL org.opencontainers.image.title="CODEFLOW Engine" \
     org.opencontainers.image.description="AI-Powered GitHub PR Automation and Issue Management" \
     org.opencontainers.image.version="1.0.0" \
     org.opencontainers.image.vendor="VeritasVault" \
-    org.opencontainers.image.source="https://github.com/veritasvault/autopr-engine" \
-    org.opencontainers.image.documentation="https://autopr-engine.readthedocs.io" \
+    org.opencontainers.image.source="https://github.com/veritasvault/codeflow-engine" \
+    org.opencontainers.image.documentation="https://codeflow-engine.readthedocs.io" \
     org.opencontainers.image.licenses="MIT"

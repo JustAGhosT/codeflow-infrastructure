@@ -1,21 +1,21 @@
-# Azure Infrastructure for AutoPR Website
+﻿# Azure Infrastructure for CodeFlow Website
 
-This directory contains the Azure Bicep infrastructure definitions for deploying the AutoPR Engine website to Azure Static Web Apps.
+This directory contains the Azure Bicep infrastructure definitions for deploying the CodeFlow Engine website to Azure Static Web Apps.
 
 ## Naming Convention
 
-All resources follow the pattern: `{env}-{resourcetype}-{region}-autopr`
+All resources follow the pattern: `{env}-{resourcetype}-{region}-codeflow`
 
 - **env**: Environment (prod, dev, staging)
 - **resourcetype**: Resource type abbreviation (stapp for Static Web App, rg for Resource Group)
 - **region**: Azure region abbreviation (eus for East US, wus for West US, etc.)
-- **autopr**: Project identifier
+- **CodeFlow**: Project identifier
 
 ### Examples
 
-- `prod-stapp-san-autopr` - Production Static Web App (region: san)
-- `prod-rg-san-autopr` - Resource Group (must be created before deployment)
-- `dev-stapp-eus-autopr` - Development Static Web App in East US
+- `prod-stapp-san-codeflow` - Production Static Web App (region: san)
+- `prod-rg-san-codeflow` - Resource Group (must be created before deployment)
+- `dev-stapp-eus-codeflow` - Development Static Web App in East US
 
 **Note:** The resource group must be created before deploying the Static Web App. Use `az group create` to create it first.
 
@@ -39,12 +39,12 @@ az account set --subscription <SUBSCRIPTION_ID>
 # Create resource group first (if it doesn't exist)
 # Note: Static Web Apps are only available in: westus2, centralus, eastus2, westeurope, eastasia
 az group create \
-  --name prod-rg-san-autopr \
+  --name prod-rg-san-codeflow \
   --location "eastus2"
 
 # Deploy the infrastructure
 az deployment group create \
-  --resource-group prod-rg-san-autopr \
+  --resource-group prod-rg-san-codeflow \
   --template-file infrastructure/bicep/website.bicep \
   --parameters @infrastructure/bicep/website-parameters.json
 
@@ -58,8 +58,8 @@ After deployment, retrieve the deployment token:
 
 ```bash
 az staticwebapp secrets list \
-  --name prod-stapp-san-autopr \
-  --resource-group prod-rg-san-autopr \
+  --name prod-stapp-san-codeflow \
+  --resource-group prod-rg-san-codeflow \
   --query "properties.apiKey" \
   --output tsv
 ```
@@ -74,21 +74,21 @@ The Bicep template automatically creates the custom domain binding. To complete 
    ```bash
    # Get the Static Web App ID from deployment outputs
    STATIC_WEB_APP_ID=$(az deployment group show \
-     --resource-group prod-rg-san-autopr \
+     --resource-group prod-rg-san-codeflow \
      --name <deployment-name> \
      --query properties.outputs.customDomainValidationToken.value \
      --output tsv)
    
    # Get the default hostname (this is what you'll point your DNS to)
    DEFAULT_HOSTNAME=$(az deployment group show \
-     --resource-group prod-rg-san-autopr \
+     --resource-group prod-rg-san-codeflow \
      --name <deployment-name> \
      --query properties.outputs.staticWebAppUrl.value \
      --output tsv)
    ```
 
 2. **Add DNS records** to your domain provider:
-   - Add a CNAME record: `autopr.io` → `$DEFAULT_HOSTNAME`
+   - Add a CNAME record: `codeflow.io` â†’ `$DEFAULT_HOSTNAME`
    - For domain validation, Azure Static Web Apps uses an automatic validation process via the CNAME record
 
 3. **Wait for validation**: Azure will automatically validate and provision the SSL certificate (usually takes 5-15 minutes after DNS propagates)
@@ -96,9 +96,9 @@ The Bicep template automatically creates the custom domain binding. To complete 
 4. **Verify custom domain status**:
    ```bash
    az staticwebapp hostname show \
-     --name prod-stapp-san-autopr \
-     --resource-group prod-rg-san-autopr \
-     --hostname autopr.io
+     --name prod-stapp-san-codeflow \
+     --resource-group prod-rg-san-codeflow \
+     --hostname codeflow.io
    ```
 
 **Note**: The custom domain binding is now configured automatically in the Bicep template, so you won't need to re-link it after each deployment. The certificate will also be automatically managed and renewed by Azure.
@@ -108,7 +108,7 @@ The Bicep template automatically creates the custom domain binding. To complete 
 ### Static Web App
 
 - **SKU**: Standard (supports custom domains)
-- **Repository**: AutoPR Engine GitHub repository
+- **Repository**: CodeFlow Engine GitHub repository
 - **Branch**: main
 - **Build Configuration**:
   - App Location: `website`
@@ -118,7 +118,7 @@ The Bicep template automatically creates the custom domain binding. To complete 
 ### Resource Group
 
 - Contains all website-related resources
-- Follows naming convention: `{env}-rg-{region}-autopr`
+- Follows naming convention: `{env}-rg-{region}-codeflow`
 
 ## Environment Variables
 

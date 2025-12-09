@@ -1,13 +1,13 @@
-#!/bin/bash
-# Script to clean up AutoPR Engine infrastructure resources
+﻿#!/bin/bash
+# Script to clean up CodeFlow Engine infrastructure resources
 
 set -e
 
-RESOURCE_GROUP=${1:-"prod-rg-san-autopr"}
+RESOURCE_GROUP=${1:-"prod-rg-san-codeflow"}
 
-echo "Cleaning up AutoPR Engine resources in resource group: $RESOURCE_GROUP"
+echo "Cleaning up CodeFlow Engine resources in resource group: $RESOURCE_GROUP"
 echo ""
-echo "⚠️  WARNING: This will delete all resources in the resource group!"
+echo "âš ï¸  WARNING: This will delete all resources in the resource group!"
 read -p "Are you sure you want to continue? (yes/no): " confirm
 
 if [ "$confirm" != "yes" ]; then
@@ -60,7 +60,7 @@ az monitor log-analytics workspace list --resource-group "$RESOURCE_GROUP" --que
 done
 
 echo ""
-echo "✅ Cleanup complete!"
+echo "âœ… Cleanup complete!"
 echo ""
 echo "Note: Some resources may take a few minutes to fully delete."
 echo "You can verify with: az resource list --resource-group $RESOURCE_GROUP"

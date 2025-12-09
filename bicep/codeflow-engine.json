@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.39.26.7824",
-      "templateHash": "14111739180302895686"
+      "templateHash": "16284815659248943212"
     }
   },
   "parameters": {
@@ -46,7 +46,7 @@
     },
     "postgresLogin": {
       "type": "string",
-      "defaultValue": "autopr",
+      "defaultValue": "codeflow",
       "metadata": {
         "description": "PostgreSQL administrator login username"
       }
@@ -65,14 +65,14 @@
     },
     "customDomain": {
       "type": "string",
-      "defaultValue": "app.autopr.io",
+      "defaultValue": "",
       "metadata": {
-        "description": "Custom domain name for the container app"
+        "description": "Custom domain name for the container app. Leave empty to skip custom domain configuration."
       }
     }
   },
   "variables": {
-    "resourceNamePrefix": "[format('{0}-autopr-{1}', parameters('environment'), parameters('regionAbbr'))]",
+    "resourceNamePrefix": "[format('{0}-codeflow-{1}', parameters('environment'), parameters('regionAbbr'))]",
     "containerAppName": "[format('{0}-app', variables('resourceNamePrefix'))]",
     "containerAppEnvName": "[format('{0}-env', variables('resourceNamePrefix'))]",
     "postgresServerName": "[format('{0}-postgres-{1}', variables('resourceNamePrefix'), uniqueString(resourceGroup().id, parameters('postgresLocation')))]",
@@ -138,7 +138,7 @@
     {
       "type": "Microsoft.DBforPostgreSQL/flexibleServers/databases",
       "apiVersion": "2023-06-01-preview",
-      "name": "[format('{0}/{1}', variables('postgresServerName'), 'autopr')]",
+      "name": "[format('{0}/{1}', variables('postgresServerName'), 'codeflow')]",
       "dependsOn": [
         "[resourceId('Microsoft.DBforPostgreSQL/flexibleServers', variables('postgresServerName'))]"
       ]
@@ -183,12 +183,7 @@
             "targetPort": 8080,
             "allowInsecure": false,
             "transport": "auto",
-            "customDomains": [
-              {
-                "name": "[parameters('customDomain')]",
-                "bindingType": "Auto"
-              }
-            ]
+            "customDomains": "[if(not(empty(parameters('customDomain'))), createArray(createObject('name', parameters('customDomain'), 'bindingType', 'Auto')), createArray())]"
           },
           "secrets": [
             {
@@ -204,11 +199,11 @@
         "template": {
           "containers": [
             {
-              "name": "autopr-engine",
+              "name": "codeflow-engine",
               "image": "[parameters('containerImage')]",
               "env": [
                 {
-                  "name": "AUTOPR_ENV",
+                  "name": "ENVIRONMENT",
                   "value": "[parameters('environment')]"
                 },
                 {
@@ -229,7 +224,7 @@
                 },
                 {
                   "name": "POSTGRES_DB",
-                  "value": "autopr"
+                  "value": "codeflow"
                 },
                 {
                   "name": "POSTGRES_USER",
@@ -289,6 +284,7 @@
       ]
     },
     {
+      "condition": "[not(empty(parameters('customDomain')))]",
       "type": "Microsoft.App/managedEnvironments/managedCertificates",
       "apiVersion": "2024-10-02-preview",
       "name": "[format('{0}/{1}', variables('containerAppEnvName'), format('cert-{0}', replace(parameters('customDomain'), '.', '-')))]",
@@ -300,7 +296,10 @@
       "dependsOn": [
         "[resourceId('Microsoft.App/containerApps', variables('containerAppName'))]",
         "[resourceId('Microsoft.App/managedEnvironments', variables('containerAppEnvName'))]"
-      ]
+      ],
+      "metadata": {
+        "description": "Managed certificate for custom domain (only created if customDomain is provided)"
+      }
     }
   ],
   "outputs": {

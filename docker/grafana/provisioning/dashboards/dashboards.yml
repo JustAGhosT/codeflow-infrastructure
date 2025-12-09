@@ -1,11 +1,11 @@
-# AutoPR Engine Grafana Dashboard Provisioning
+﻿# CodeFlow Engine Grafana Dashboard Provisioning
 
 apiVersion: 1
 
 providers:
-  - name: 'AutoPR Dashboards'
+  - name: 'CodeFlow Dashboards'
     orgId: 1
-    folder: 'AutoPR Engine'
+    folder: 'CodeFlow Engine'
     folderUid: ''
     type: file
     disableDeletion: false

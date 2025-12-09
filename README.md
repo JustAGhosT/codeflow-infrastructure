@@ -1,4 +1,4 @@
-# CodeFlow Infrastructure
+﻿# CodeFlow Infrastructure
 
 Production infrastructure as code (IaC) for CodeFlow - the source of truth for live environments.
 
@@ -18,7 +18,7 @@ Production-ready infrastructure for the CodeFlow Engine application:
 - **Azure Cache for Redis**: Caching and session storage
 - **Log Analytics Workspace**: Centralized logging
 
-See [README-AUTOPR-ENGINE.md](bicep/README-AUTOPR-ENGINE.md) for deployment instructions.
+See [README-CODEFLOW-ENGINE.md](bicep/README-CODEFLOW-ENGINE.md) for deployment instructions.
 
 ### 2. Website (`bicep/website.bicep`)
 
@@ -41,16 +41,16 @@ Original infrastructure template (AKS, ACR, PostgreSQL, Redis):
 
 Bicep is the native Azure IaC language and is recommended for Azure deployments:
 
-**AutoPR Engine:**
+**CodeFlow Engine:**
 ```bash
 bash bicep/deploy-codeflow-engine.sh prod san "eastus2"
 ```
 
 **Website:**
 ```bash
-az group create --name prod-rg-san-autopr --location "eastus2"
+az group create --name prod-rg-san-codeflow --location "eastus2"
 az deployment group create \
-  --resource-group prod-rg-san-autopr \
+  --resource-group prod-rg-san-codeflow \
   --template-file bicep/website.bicep \
   --parameters @bicep/website-parameters.json
 ```
@@ -68,10 +68,10 @@ terraform apply
 
 ## Naming Convention
 
-All resources follow the pattern: `{env}-{resourcetype}-{region}-autopr`
+All resources follow the pattern: `{env}-{resourcetype}-{region}-codeflow`
 
 - **env**: Environment (prod, dev, staging)
-- **resourcetype**: Resource type abbreviation (stapp, autopr, rg, etc.)
+- **resourcetype**: Resource type abbreviation (stapp, codeflow, rg, etc.)
 - **region**: Azure region abbreviation (san, eus, wus, etc.)
 
 Examples:
@@ -83,30 +83,30 @@ Examples:
 
 ```
 codeflow-infrastructure/
-├── bicep/              # Bicep templates
-│   ├── codeflow-engine.bicep
-│   ├── website.bicep
-│   └── ...
-├── terraform/          # Terraform configurations
-│   ├── main.tf
-│   └── ...
-├── .github/
-│   └── workflows/     # Deployment workflows
-└── README.md
+â”œâ”€â”€ bicep/              # Bicep templates
+â”‚   â”œâ”€â”€ codeflow-engine.bicep
+â”‚   â”œâ”€â”€ website.bicep
+â”‚   â””â”€â”€ ...
+â”œâ”€â”€ terraform/          # Terraform configurations
+â”‚   â”œâ”€â”€ main.tf
+â”‚   â””â”€â”€ ...
+â”œâ”€â”€ .github/
+â”‚   â””â”€â”€ workflows/     # Deployment workflows
+â””â”€â”€ README.md
 ```
 
 ## Boundary Rules
 
 **This repository contains**:
-- ✅ CodeFlow-specific infrastructure
-- ✅ Production environments (prod/dev/uat)
-- ✅ Real infrastructure that is source of truth
-- ✅ Deployment workflows
+- âœ… CodeFlow-specific infrastructure
+- âœ… Production environments (prod/dev/uat)
+- âœ… Real infrastructure that is source of truth
+- âœ… Deployment workflows
 
 **This repository does NOT contain**:
-- ❌ Generic bootstrap scripts (see `codeflow-azure-setup`)
-- ❌ Application code (see `codeflow-engine`)
-- ❌ Reusable, org-agnostic scripts
+- âŒ Generic bootstrap scripts (see `codeflow-azure-setup`)
+- âŒ Application code (see `codeflow-engine`)
+- âŒ Reusable, org-agnostic scripts
 
 ## CI/CD
 

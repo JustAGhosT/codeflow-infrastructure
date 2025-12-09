@@ -1,4 +1,4 @@
-# Azure Container Apps Deployment FAQ
+﻿# Azure Container Apps Deployment FAQ
 
 ## Certificate Management
 
@@ -8,14 +8,14 @@
 
 Azure Container Apps automatically manages SSL/TLS certificates for your custom domain at no additional cost. The deployment template is configured to use **Azure Managed Certificates**, which means:
 
-✅ **Automatic Certificate Provisioning**: Azure creates a free SSL certificate for your domain
-✅ **Automatic Renewal**: Certificates are renewed before expiration without any manual intervention
-✅ **No Certificate Upload Required**: You don't need to buy, upload, or manage certificates
-✅ **Single Deployment**: Everything is configured in one deployment step
+âœ… **Automatic Certificate Provisioning**: Azure creates a free SSL certificate for your domain
+âœ… **Automatic Renewal**: Certificates are renewed before expiration without any manual intervention
+âœ… **No Certificate Upload Required**: You don't need to buy, upload, or manage certificates
+âœ… **Single Deployment**: Everything is configured in one deployment step
 
 ### What You DO Need to Provide:
 
-1. **A custom domain name** (e.g., `app.autopr.io`)
+1. **A custom domain name** (e.g., `app.codeflow.io`)
 2. **DNS CNAME record** pointing your domain to the Container App FQDN
 
 ### DNS Configuration Steps
@@ -24,15 +24,15 @@ Before or immediately after deployment, add a CNAME record:
 
 ```
 Type: CNAME
-Name: app.autopr.io (or your subdomain)
-Value: prod-autopr-san-app.eastus2.azurecontainerapps.io
+Name: app.codeflow.io (or your subdomain)
+Value: prod-codeflow-san-app.eastus2.azurecontainerapps.io
 TTL: 3600 (or default)
 ```
 
 To get your Container App FQDN after deployment:
 ```bash
 az deployment group show \
-  --resource-group prod-rg-san-autopr \
+  --resource-group prod-rg-san-codeflow \
   --name codeflow-engine \
   --query properties.outputs.containerAppUrl.value
 ```
@@ -40,9 +40,9 @@ az deployment group show \
 ### Certificate Provisioning Timeline:
 
 After DNS is configured:
-- ⏱️ **DNS Propagation**: 15-30 minutes (varies by DNS provider)
-- ⏱️ **Certificate Validation**: 5-15 minutes (Azure validates domain ownership)
-- ⏱️ **Certificate Provisioning**: Automatic (Azure creates and binds the certificate)
+- â±ï¸ **DNS Propagation**: 15-30 minutes (varies by DNS provider)
+- â±ï¸ **Certificate Validation**: 5-15 minutes (Azure validates domain ownership)
+- â±ï¸ **Certificate Provisioning**: Automatic (Azure creates and binds the certificate)
 
 Total time: Typically 20-45 minutes from DNS configuration to working HTTPS.
 
@@ -92,10 +92,10 @@ The deployment now follows this correct order:
 
 **Nothing!** If you're using the latest version of the template (after this fix), the deployment will work correctly. The changes are:
 
-✅ **Container app created first** with custom domain configured
-✅ **Certificate created second** after hostname is added
-✅ **Automatic certificate binding** via `bindingType: 'Auto'`
-✅ **Single deployment** - no need for two-step process
+âœ… **Container app created first** with custom domain configured
+âœ… **Certificate created second** after hostname is added
+âœ… **Automatic certificate binding** via `bindingType: 'Auto'`
+âœ… **Single deployment** - no need for two-step process
 
 ### Verification
 
@@ -104,15 +104,15 @@ After deployment, you can verify the setup:
 ```bash
 # Check that the container app has the custom domain
 az containerapp show \
-  --name prod-autopr-san-app \
-  --resource-group prod-rg-san-autopr \
+  --name prod-codeflow-san-app \
+  --resource-group prod-rg-san-codeflow \
   --query "properties.configuration.ingress.customDomains"
 
 # Check that the managed certificate was created
 az containerapp env certificate list \
-  --name prod-autopr-san-env \
-  --resource-group prod-rg-san-autopr \
-  --query "[?properties.subjectName=='app.autopr.io']"
+  --name prod-codeflow-san-env \
+  --resource-group prod-rg-san-codeflow \
+  --query "[?properties.subjectName=='app.codeflow.io']"
 ```
 
 ### If You're Using an Older Template Version
@@ -147,9 +147,9 @@ Azure Container Apps allows only **ONE managed certificate per domain per enviro
 
 If you're using the GitHub Actions workflow (`.github/workflows/deploy-codeflow-engine.yml`), this is **automatically handled** for you! The workflow includes a cleanup step that:
 
-1. ✅ Checks for existing managed certificates for your domain
-2. ✅ Removes any duplicates before deployment
-3. ✅ Ensures clean deployment every time
+1. âœ… Checks for existing managed certificates for your domain
+2. âœ… Removes any duplicates before deployment
+3. âœ… Ensures clean deployment every time
 
 ### Manual Fix
 
@@ -157,9 +157,9 @@ If deploying manually with Azure CLI, run this cleanup script before deployment:
 
 ```bash
 # Set your environment variables
-RESOURCE_GROUP="prod-rg-san-autopr"
-ENV_NAME="prod-autopr-san-env"
-CUSTOM_DOMAIN="app.autopr.io"
+RESOURCE_GROUP="prod-rg-san-codeflow"
+ENV_NAME="prod-codeflow-san-env"
+CUSTOM_DOMAIN="app.codeflow.io"
 
 # List all managed certificates for the domain
 az containerapp env certificate list \
@@ -227,13 +227,13 @@ git pull origin main
 # Redeploy with the updated template
 az deployment group create \
   --name codeflow-engine \
-  --resource-group prod-rg-san-autopr \
+  --resource-group prod-rg-san-codeflow \
   --template-file infrastructure/bicep/codeflow-engine.bicep \
   --parameters \
     environment=prod \
     regionAbbr=san \
     location=eastus2 \
-    customDomain=app.autopr.io \
+    customDomain=app.codeflow.io \
     containerImage=ghcr.io/justaghost/codeflow-engine:latest \
     postgresLogin="<your-login>" \
     postgresPassword="<your-password>" \
@@ -246,7 +246,7 @@ az deployment group create \
 # Deploy without customDomain parameter
 az deployment group create \
   --name codeflow-engine \
-  --resource-group prod-rg-san-autopr \
+  --resource-group prod-rg-san-codeflow \
   --template-file infrastructure/bicep/codeflow-engine.bicep \
   --parameters \
     environment=prod \
@@ -262,13 +262,13 @@ az deployment group create \
 # Redeploy with custom domain
 az deployment group create \
   --name codeflow-engine \
-  --resource-group prod-rg-san-autopr \
+  --resource-group prod-rg-san-codeflow \
   --template-file infrastructure/bicep/codeflow-engine.bicep \
   --parameters \
     environment=prod \
     regionAbbr=san \
     location=eastus2 \
-    customDomain=app.autopr.io \
+    customDomain=app.codeflow.io \
     containerImage=ghcr.io/justaghost/codeflow-engine:latest \
     postgresLogin="<your-login>" \
     postgresPassword="<your-password>" \
@@ -282,22 +282,22 @@ az deployment group create \
 ### Check Certificate Status:
 ```bash
 az containerapp show \
-  --name prod-autopr-san-app \
-  --resource-group prod-rg-san-autopr \
+  --name prod-codeflow-san-app \
+  --resource-group prod-rg-san-codeflow \
   --query "properties.configuration.ingress.customDomains"
 ```
 
 ### Check Managed Certificate
 ```bash
 az containerapp env certificate list \
-  --name prod-autopr-san-env \
-  --resource-group prod-rg-san-autopr
+  --name prod-codeflow-san-env \
+  --resource-group prod-rg-san-codeflow
 ```
 
 ### Test HTTPS:
 
 ```bash
-curl -I https://app.autopr.io
+curl -I https://app.codeflow.io
 ```
 
 ---
@@ -305,5 +305,5 @@ curl -I https://app.autopr.io
 ## Additional Resources
 
 - **Detailed Technical Explanation**: See [CERTIFICATE_FIX.md](./CERTIFICATE_FIX.md)
-- **Deployment Guide**: See [README-AUTOPR-ENGINE.md](./README-AUTOPR-ENGINE.md)
+- **Deployment Guide**: See [README-codeflow-ENGINE.md](./README-codeflow-ENGINE.md)
 - **Azure Documentation**: [Container Apps Custom Domains](https://learn.microsoft.com/en-us/azure/container-apps/custom-domains-certificates)

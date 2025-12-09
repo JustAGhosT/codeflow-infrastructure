@@ -47,6 +47,9 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# ============================================================================
+# SECTION 1: Initialization and Validation
+# ============================================================================
 $ResourceGroup = "$OrgCode-$Environment-$Project-rg-$RegionAbbr"
 
 Write-Host "========================================" -ForegroundColor Cyan
@@ -62,12 +65,32 @@ Write-Host "  Resource Group: $ResourceGroup" -ForegroundColor White
 Write-Host "  Custom Domain: $(if ([string]::IsNullOrEmpty($CustomDomain)) { 'None' } else { $CustomDomain })" -ForegroundColor White
 Write-Host ""
 
-# Check if resource group exists
+# Validate Azure CLI is installed
+if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
+    Write-Host "✗ Azure CLI is not installed or not in PATH" -ForegroundColor Red
+    Write-Host "  Install from: https://aka.ms/InstallAzureCLI" -ForegroundColor Yellow
+    exit 1
+}
+
+# Validate Bicep file exists
+$bicepFile = Join-Path $PSScriptRoot "codeflow-engine.bicep"
+if (-not (Test-Path $bicepFile)) {
+    Write-Host "✗ Bicep template not found: $bicepFile" -ForegroundColor Red
+    exit 1
+}
+
+# ============================================================================
+# SECTION 2: Resource Group Management
+# ============================================================================
 Write-Host "Checking resource group..." -ForegroundColor Yellow
 $rgExists = az group show --name $ResourceGroup --query "name" --output tsv 2>$null
 if (-not $rgExists) {
     Write-Host "  Creating resource group..." -ForegroundColor Gray
     az group create --name $ResourceGroup --location $Location --output none
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "✗ Failed to create resource group" -ForegroundColor Red
+        exit 1
+    }
     Write-Host "  ✓ Resource group created" -ForegroundColor Green
 }
 else {
@@ -75,7 +98,9 @@ else {
 }
 Write-Host ""
 
-# Use placeholder if no image specified
+# ============================================================================
+# SECTION 3: Container Image Configuration
+# ============================================================================
 if ([string]::IsNullOrEmpty($ContainerImage)) {
     Write-Host "⚠️  WARNING: No container image specified. Using placeholder image for testing." -ForegroundColor Yellow
     Write-Host "   Build and push the image first, then update the Container App." -ForegroundColor Gray
@@ -83,6 +108,11 @@ if ([string]::IsNullOrEmpty($ContainerImage)) {
     Write-Host ""
     $ContainerImage = "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
 }
+
+# ============================================================================
+# SECTION 4: Credential Management
+# ============================================================================
+$PostgresLogin = "codeflow"
 
 # Generate passwords if not provided
 if ([string]::IsNullOrEmpty($env:POSTGRES_PASSWORD)) {
@@ -95,9 +125,7 @@ if ([string]::IsNullOrEmpty($env:REDIS_PASSWORD)) {
     $env:REDIS_PASSWORD = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 32 | ForEach-Object { [char]$_ })
 }
 
-$PostgresLogin = "codeflow"
-
-# Save credentials securely
+# Save credentials securely (temporary - should be moved to Azure Key Vault)
 $CredentialsFile = ".credentials-$ResourceGroup.json"
 
 # Remove existing file if it exists
@@ -137,11 +165,15 @@ catch {
 }
 Write-Host ""
 
-# Deploy the infrastructure
+# ============================================================================
+# SECTION 5: Infrastructure Deployment
+# ============================================================================
 Write-Host "Deploying infrastructure..." -ForegroundColor Green
 $deploymentName = "codeflow-engine-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
 
-$bicepFile = Join-Path $PSScriptRoot "codeflow-engine.bicep"
+Write-Host "  Deployment name: $deploymentName" -ForegroundColor Gray
+Write-Host "  Template file: $bicepFile" -ForegroundColor Gray
+Write-Host ""
 
 az deployment group create `
     --name $deploymentName `
@@ -159,22 +191,26 @@ az deployment group create `
     redisPassword=$env:REDIS_PASSWORD `
     --output json | Out-File -FilePath "deployment-output.json" -Encoding utf8
 
+# ============================================================================
+# SECTION 6: Deployment Results and Next Steps
+# ============================================================================
 if ($LASTEXITCODE -eq 0) {
     Write-Host "✓ Deployment complete!" -ForegroundColor Green
     Write-Host ""
     
-    # Get Container App URL
+    # Get Container App URL from deployment output
     if (Test-Path "deployment-output.json") {
         try {
             $output = Get-Content "deployment-output.json" | ConvertFrom-Json
             $containerAppUrl = $output.properties.outputs.containerAppUrl.value
             
-            Write-Host "Container App URL: $containerAppUrl" -ForegroundColor Cyan
+            Write-Host "Deployment Summary:" -ForegroundColor Cyan
+            Write-Host "  Container App URL: $containerAppUrl" -ForegroundColor White
             
             if (![string]::IsNullOrEmpty($CustomDomain)) {
-                Write-Host "Custom Domain: $CustomDomain" -ForegroundColor Cyan
+                Write-Host "  Custom Domain: $CustomDomain" -ForegroundColor White
                 Write-Host ""
-                Write-Host "Next steps:" -ForegroundColor Yellow
+                Write-Host "Next Steps:" -ForegroundColor Yellow
                 Write-Host "1. Add DNS CNAME record for $CustomDomain pointing to the Container App URL above" -ForegroundColor White
                 Write-Host "2. Wait for DNS propagation (typically 15-30 minutes)" -ForegroundColor White
                 Write-Host "3. Azure will automatically provision the SSL certificate" -ForegroundColor White
@@ -187,11 +223,25 @@ if ($LASTEXITCODE -eq 0) {
         }
         catch {
             Write-Host "⚠️  Could not read deployment output: $_" -ForegroundColor Yellow
+            Write-Host "   Check deployment-output.json manually for deployment details." -ForegroundColor Gray
         }
     }
+    else {
+        Write-Host "⚠️  Deployment output file not found" -ForegroundColor Yellow
+    }
+    
+    Write-Host ""
+    Write-Host "✓ Deployment script completed successfully!" -ForegroundColor Green
 }
 else {
     Write-Host "✗ Deployment failed!" -ForegroundColor Red
+    Write-Host "Check the error messages above for details." -ForegroundColor Yellow
+    Write-Host "Common issues:" -ForegroundColor Yellow
+    Write-Host "  - Invalid parameters or resource names" -ForegroundColor Gray
+    Write-Host "  - Insufficient permissions" -ForegroundColor Gray
+    Write-Host "  - Resource quota limits" -ForegroundColor Gray
+    Write-Host "  - Network connectivity issues" -ForegroundColor Gray
     exit 1
 }
+
 

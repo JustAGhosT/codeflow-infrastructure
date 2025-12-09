@@ -1,4 +1,4 @@
-{
+﻿{
   "annotations": {
     "list": []
   },
@@ -65,7 +65,7 @@
           "refId": "A"
         }
       ],
-      "title": "AutoPR Engine Status",
+      "title": "CodeFlow Engine Status",
       "type": "stat"
     },
     {
@@ -120,11 +120,11 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "up{job=\"autopr-worker\"}",
+          "expr": "up{job=\"codeflow-worker\"}",
           "refId": "A"
         }
       ],
-      "title": "AutoPR Worker Status",
+      "title": "CodeFlow Worker Status",
       "type": "stat"
     }
   ],
@@ -132,7 +132,7 @@
   "schemaVersion": 38,
   "style": "dark",
   "tags": [
-    "autopr"
+    "CodeFlow"
   ],
   "templating": {
     "list": []
@@ -143,8 +143,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "AutoPR Engine Overview",
-  "uid": "autopr-overview",
+  "title": "CodeFlow Engine Overview",
+  "uid": "codeflow-overview",
   "version": 1,
   "weekStart": ""
 }

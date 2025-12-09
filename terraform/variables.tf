@@ -1,7 +1,7 @@
-variable "resource_group_name" {
+﻿variable "resource_group_name" {
   type        = string
   description = "The name of the Azure Resource Group."
-  default     = "autopr-rg"
+  default     = "codeflow-rg"
 }
 
 variable "location" {
@@ -13,13 +13,13 @@ variable "location" {
 variable "aks_cluster_name" {
   type        = string
   description = "The name of the AKS cluster."
-  default     = "autopr-aks"
+  default     = "codeflow-aks"
 }
 
 variable "acr_name" {
   type        = string
   description = "The name of the Azure Container Registry."
-  default     = "autopracr"
+  default     = "codeflowacr"
 }
 
 variable "postgres_password" {

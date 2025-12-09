@@ -1,4 +1,4 @@
-{
+﻿{
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "metadata": {
@@ -32,14 +32,14 @@
     },
     "customDomain": {
       "type": "string",
-      "defaultValue": "autopr.io",
+      "defaultValue": "codeflow.io",
       "metadata": {
         "description": "Custom domain name"
       }
     }
   },
   "variables": {
-    "resourceNamePrefix": "[format('{0}-stapp-{1}-autopr', parameters('environment'), parameters('regionAbbr'))]",
+    "resourceNamePrefix": "[format('{0}-stapp-{1}-codeflow', parameters('environment'), parameters('regionAbbr'))]",
     "staticWebAppName": "[variables('resourceNamePrefix')]"
   },
   "resources": [
@@ -53,7 +53,7 @@
         "tier": "Standard"
       },
       "properties": {
-        "repositoryUrl": "https://github.com/JustAGhosT/autopr-engine",
+        "repositoryUrl": "https://github.com/JustAGhosT/codeflow-engine",
         "branch": "main",
         "buildProperties": {
           "appLocation": "website",

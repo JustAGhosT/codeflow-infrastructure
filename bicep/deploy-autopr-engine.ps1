@@ -1,4 +1,4 @@
-# Script to deploy AutoPR Engine infrastructure
+﻿# Script to deploy CodeFlow Engine infrastructure
 # Creates resource group if it doesn't exist, then deploys the infrastructure
 
 param(
@@ -7,14 +7,14 @@ param(
     [string]$Location = "eastus2",
     [string]$PostgresLocation = "southafricanorth",
     [string]$ContainerImage = "",
-    [string]$CustomDomain = "app.autopr.io"
+    [string]$CustomDomain = "app.codeflow.io"
 )
 
 $ErrorActionPreference = "Stop"
 
-$ResourceGroup = "prod-rg-${RegionAbbr}-autopr"
+$ResourceGroup = "prod-rg-${RegionAbbr}-codeflow"
 
-Write-Host "Deploying AutoPR Engine infrastructure..."
+Write-Host "Deploying CodeFlow Engine infrastructure..."
 Write-Host "Environment: $Environment"
 Write-Host "Region: $RegionAbbr"
 Write-Host "Location: $Location"
@@ -36,7 +36,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # Cleanup duplicate certificates to prevent deployment failures
-$EnvName = "$Environment-autopr-$RegionAbbr-env"
+$EnvName = "$Environment-codeflow-$RegionAbbr-env"
 
 Write-Host ""
 Write-Host "Checking for duplicate managed certificates..."
@@ -53,7 +53,7 @@ if ($LASTEXITCODE -eq 0) {
     }
     
     if ($duplicateCerts) {
-        Write-Host "⚠️  Found $($duplicateCerts.Count) existing certificate(s) for domain $CustomDomain" -ForegroundColor Yellow
+        Write-Host "âš ï¸  Found $($duplicateCerts.Count) existing certificate(s) for domain $CustomDomain" -ForegroundColor Yellow
         Write-Host "Cleaning up to prevent DuplicateManagedCertificateInEnvironment error..."
         
         foreach ($cert in $duplicateCerts) {
@@ -64,17 +64,17 @@ if ($LASTEXITCODE -eq 0) {
                 --certificate $cert.name `
                 --yes 2>$null
             if ($LASTEXITCODE -ne 0) {
-                Write-Host "  ⚠️  Failed to delete certificate (may not exist or be in use)" -ForegroundColor Yellow
+                Write-Host "  âš ï¸  Failed to delete certificate (may not exist or be in use)" -ForegroundColor Yellow
             } else {
-                Write-Host "  ✅ Deleted successfully" -ForegroundColor Green
+                Write-Host "  âœ… Deleted successfully" -ForegroundColor Green
             }
         }
-        Write-Host "✅ Cleanup completed" -ForegroundColor Green
+        Write-Host "âœ… Cleanup completed" -ForegroundColor Green
     } else {
-        Write-Host "✅ No duplicate certificates found" -ForegroundColor Green
+        Write-Host "âœ… No duplicate certificates found" -ForegroundColor Green
     }
 } else {
-    Write-Host "ℹ️  Environment does not exist yet, skipping certificate cleanup"
+    Write-Host "â„¹ï¸  Environment does not exist yet, skipping certificate cleanup"
 }
 Write-Host ""
 
@@ -91,7 +91,7 @@ if (-not $env:REDIS_PASSWORD) {
 
 # Get container image from parameter or default
 if ([string]::IsNullOrEmpty($ContainerImage)) {
-    Write-Host "⚠️  WARNING: No container image specified. Using placeholder image for testing." -ForegroundColor Yellow
+    Write-Host "âš ï¸  WARNING: No container image specified. Using placeholder image for testing." -ForegroundColor Yellow
     Write-Host "   Build and push the image first, then update the Container App." -ForegroundColor Yellow
     Write-Host "   See: infrastructure/bicep/BUILD_AND_PUSH_IMAGE.md" -ForegroundColor Yellow
     Write-Host ""
@@ -104,9 +104,9 @@ Write-Host "Container Image: $ContainerImage"
 Write-Host ""
 
 az deployment group create `
-    --name autopr-engine `
+    --name codeflow-engine `
     --resource-group $ResourceGroup `
-    --template-file infrastructure/bicep/autopr-engine.bicep `
+    --template-file infrastructure/bicep/codeflow-engine.bicep `
     --parameters `
         environment=$Environment `
         regionAbbr=$RegionAbbr `
@@ -128,7 +128,7 @@ Write-Host "Deployment complete!"
 Write-Host "PostgreSQL password: $env:POSTGRES_PASSWORD"
 Write-Host "Redis password: $env:REDIS_PASSWORD"
 Write-Host ""
-Write-Host "⚠️  IMPORTANT: Save these passwords securely!"
+Write-Host "âš ï¸  IMPORTANT: Save these passwords securely!"
 Write-Host ""
 
 # Get container app URL

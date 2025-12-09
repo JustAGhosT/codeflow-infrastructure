@@ -18,6 +18,9 @@ az-environment-summary.json
 deployment-output.json
 *.json.bak
 
+# Credentials
+.credentials-*.json
+
 # OS
 .DS_Store
 Thumbs.db

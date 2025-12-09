@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 # Script to deploy Static Web App infrastructure
 # Creates resource group if it doesn't exist, then deploys the Static Web App
 
@@ -7,7 +7,7 @@ set -e
 ENVIRONMENT=${1:-prod}
 REGION_ABBR=${2:-san}
 LOCATION=${3:-"eastus2"}
-RESOURCE_GROUP="${ENVIRONMENT}-rg-${REGION_ABBR}-autopr"
+RESOURCE_GROUP="${ENVIRONMENT}-rg-${REGION_ABBR}-codeflow"
 
 echo "Deploying Static Web App infrastructure..."
 echo "Environment: $ENVIRONMENT"
@@ -31,8 +31,8 @@ az deployment group create \
     environment="$ENVIRONMENT" \
     regionAbbr="$REGION_ABBR" \
     location="$LOCATION" \
-    customDomain="autopr.io"
+    customDomain="codeflow.io"
 
 echo "Deployment complete!"
-echo "Static Web App name: ${ENVIRONMENT}-stapp-${REGION_ABBR}-autopr"
+echo "Static Web App name: ${ENVIRONMENT}-stapp-${REGION_ABBR}-codeflow"
 

@@ -1,7 +1,7 @@
-apiVersion: v1
+﻿apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: autopr-config
+  name: codeflow-config
 data:
-  AUTOPR_ENV: "production"
-  AUTOPR_LOG_LEVEL: "INFO"
+  CODEFLOW_ENV: "production"
+  CODEFLOW_LOG_LEVEL: "INFO"

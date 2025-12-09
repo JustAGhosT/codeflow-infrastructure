@@ -1,4 +1,4 @@
-version: "3.8"
+﻿version: "3.8"
 
 services:
   # CodeFlow Engine main application
@@ -15,11 +15,11 @@ services:
       - "8080:8080"
     environment:
       # Core configuration
-      AUTOPR_ENV: ${AUTOPR_ENV:-development}
-      AUTOPR_HOST: ${AUTOPR_HOST:-0.0.0.0}
-      AUTOPR_PORT: ${AUTOPR_PORT:-8080}
-      AUTOPR_WORKERS: ${AUTOPR_WORKERS:-1}
-      AUTOPR_LOG_LEVEL: ${AUTOPR_LOG_LEVEL:-INFO}
+      codeflow_ENV: ${codeflow_ENV:-development}
+      codeflow_HOST: ${codeflow_HOST:-0.0.0.0}
+      codeflow_PORT: ${codeflow_PORT:-8080}
+      codeflow_WORKERS: ${codeflow_WORKERS:-1}
+      codeflow_LOG_LEVEL: ${codeflow_LOG_LEVEL:-INFO}
 
       # GitHub integration
       GITHUB_TOKEN: ${GITHUB_TOKEN}
@@ -33,7 +33,7 @@ services:
 
       # Database connections
       # TODO: SECURITY - Use secrets management in production (Vault, AWS Secrets Manager)
-      DATABASE_URL: postgresql://${POSTGRES_USER:-autopr}:${POSTGRES_PASSWORD:-CHANGE_ME_IMMEDIATELY}@postgres:5432/${POSTGRES_DB:-autopr}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-codeflow}:${POSTGRES_PASSWORD:-CHANGE_ME_IMMEDIATELY}@postgres:5432/${POSTGRES_DB:-codeflow}
       REDIS_URL: redis://:${REDIS_PASSWORD:-CHANGE_ME_REDIS}@redis:6379/0
 
       # Integrations
@@ -46,8 +46,8 @@ services:
       PROMETHEUS_ENABLED: ${PROMETHEUS_ENABLED:-true}
 
     volumes:
-      - autopr_data:/app/data
-      - autopr_logs:/app/logs
+      - codeflow_data:/app/data
+      - codeflow_logs:/app/logs
       - ./configs:/app/config:ro
     depends_on:
       - postgres
@@ -64,11 +64,11 @@ services:
   # PostgreSQL database
   postgres:
     image: postgres:15-alpine
-    container_name: autopr-postgres
+    container_name: codeflow-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-autopr}
-      POSTGRES_USER: ${POSTGRES_USER:-autopr}
+      POSTGRES_DB: ${POSTGRES_DB:-codeflow}
+      POSTGRES_USER: ${POSTGRES_USER:-codeflow}
       # TODO: SECURITY - Generate strong random password on first setup
       # CRITICAL: Change this default password immediately in production!
       # Use: openssl rand -base64 32
@@ -82,7 +82,7 @@ services:
     networks:
       - codeflow-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U autopr -d autopr"]
+      test: ["CMD-SHELL", "pg_isready -U codeflow -d codeflow"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -90,7 +90,7 @@ services:
   # Redis for caching and state
   redis:
     image: redis:7-alpine
-    container_name: autopr-redis
+    container_name: codeflow-redis
     restart: unless-stopped
     command: redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_PASSWORD:-CHANGE_ME_REDIS}
     environment:
@@ -109,36 +109,36 @@ services:
       retries: 5
 
   # Background worker for async tasks
-  autopr-worker:
+  codeflow-worker:
     build:
       context: .
       dockerfile: ./docker/Dockerfile
       target: production
       args:
         RUN_TESTS: "false"
-    container_name: autopr-worker
+    container_name: codeflow-worker
     restart: unless-stopped
-    command: ["autopr-worker"]
+    command: ["codeflow-worker"]
     environment:
       # Same environment as main app
-      AUTOPR_ENV: ${AUTOPR_ENV:-development}
-      AUTOPR_LOG_LEVEL: ${AUTOPR_LOG_LEVEL:-INFO}
+      codeflow_ENV: ${codeflow_ENV:-development}
+      codeflow_LOG_LEVEL: ${codeflow_LOG_LEVEL:-INFO}
 
       # Worker-specific configuration
-      AUTOPR_WORKER_CONCURRENCY: ${AUTOPR_WORKER_CONCURRENCY:-4}
-      AUTOPR_WORKER_QUEUES: ${AUTOPR_WORKER_QUEUES:-default,high,low}
+      codeflow_WORKER_CONCURRENCY: ${codeflow_WORKER_CONCURRENCY:-4}
+      codeflow_WORKER_QUEUES: ${codeflow_WORKER_QUEUES:-default,high,low}
 
       # Reuse environment from main service
       GITHUB_TOKEN: ${GITHUB_TOKEN}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-autopr}:${POSTGRES_PASSWORD:-CHANGE_ME_IMMEDIATELY}@postgres:5432/${POSTGRES_DB:-autopr}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-codeflow}:${POSTGRES_PASSWORD:-CHANGE_ME_IMMEDIATELY}@postgres:5432/${POSTGRES_DB:-codeflow}
       REDIS_URL: redis://:${REDIS_PASSWORD:-CHANGE_ME_REDIS}@redis:6379/0
       SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
       LINEAR_API_KEY: ${LINEAR_API_KEY:-}
     volumes:
-      - autopr_data:/app/data
-      - autopr_logs:/app/logs
+      - codeflow_data:/app/data
+      - codeflow_logs:/app/logs
       - ./configs:/app/config:ro
     depends_on:
       - postgres
@@ -149,7 +149,7 @@ services:
   # Prometheus for metrics collection (optional)
   prometheus:
     image: prom/prometheus:latest
-    container_name: autopr-prometheus
+    container_name: codeflow-prometheus
     restart: unless-stopped
     profiles:
       - monitoring
@@ -170,7 +170,7 @@ services:
   # Grafana for metrics visualization (optional)
   grafana:
     image: grafana/grafana:latest
-    container_name: autopr-grafana
+    container_name: codeflow-grafana
     restart: unless-stopped
     profiles:
       - monitoring
@@ -191,7 +191,7 @@ services:
   # Nginx reverse proxy (optional, for production)
   nginx:
     image: nginx:alpine
-    container_name: autopr-nginx
+    container_name: codeflow-nginx
     restart: unless-stopped
     profiles:
       - production
@@ -209,9 +209,9 @@ services:
 
 # Persistent volumes
 volumes:
-  autopr_data:
+  codeflow_data:
     driver: local
-  autopr_logs:
+  codeflow_logs:
     driver: local
   postgres_data:
     driver: local

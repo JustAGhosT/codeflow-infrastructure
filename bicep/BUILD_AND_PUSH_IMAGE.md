@@ -1,6 +1,6 @@
-# Building and Pushing Container Image
+﻿# Building and Pushing Container Image
 
-Before deploying the AutoPR Engine infrastructure, you need to build and push the container image to a container registry.
+Before deploying the CodeFlow Engine infrastructure, you need to build and push the container image to a container registry.
 
 ## Option 1: Use GitHub Actions (Recommended)
 
@@ -64,7 +64,7 @@ If you prefer using Azure Container Registry:
 3. **Update the deployment:**
    ```bash
    az deployment group create \
-     --resource-group prod-rg-san-autopr \
+     --resource-group prod-rg-san-codeflow \
      --template-file infrastructure/bicep/codeflow-engine.bicep \
      --parameters \
        containerImage="<your-acr-name>.azurecr.io/codeflow-engine:latest" \
@@ -77,14 +77,14 @@ For testing the infrastructure deployment, you can use a placeholder image:
 
 ```bash
 az deployment group create \
-  --resource-group prod-rg-san-autopr \
+  --resource-group prod-rg-san-codeflow \
   --template-file infrastructure/bicep/codeflow-engine.bicep \
   --parameters \
     containerImage="mcr.microsoft.com/azuredocs/containerapps-helloworld:latest" \
     ...
 ```
 
-**Note:** This will deploy a hello-world app, not AutoPR Engine. Update the image later once you've built and pushed the actual image.
+**Note:** This will deploy a hello-world app, not CodeFlow Engine. Update the image later once you've built and pushed the actual image.
 
 ## Updating the Container Image After Deployment
 
@@ -92,8 +92,8 @@ Once you have the image built and pushed, update the Container App:
 
 ```bash
 az containerapp update \
-  --name prod-autopr-san-app \
-  --resource-group prod-rg-san-autopr \
+  --name prod-codeflow-san-app \
+  --resource-group prod-rg-san-codeflow \
   --image ghcr.io/justaghost/codeflow-engine:latest
 ```
 

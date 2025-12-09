@@ -1,4 +1,4 @@
-terraform {
+﻿terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -7,8 +7,8 @@ terraform {
   }
 
   backend "azurerm" {
-    resource_group_name  = "autopr-rg"
-    storage_account_name = "autoprtfstate"
+    resource_group_name  = "codeflow-rg"
+    storage_account_name = "codeflowtfstate"
     container_name       = "tfstate"
     key                  = "terraform.tfstate"
   }
@@ -35,7 +35,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   name                = var.aks_cluster_name
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  dns_prefix          = "autopr"
+  dns_prefix          = "codeflow"
 
   default_node_pool {
     name       = "default"
@@ -53,7 +53,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
 }
 
 resource "azurerm_postgresql_server" "postgres" {
-  name                = "autopr-postgres"
+  name                = "codeflow-postgres"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 
@@ -64,14 +64,14 @@ resource "azurerm_postgresql_server" "postgres" {
   geo_redundant_backup_enabled = false
   auto_grow_enabled            = true
 
-  administrator_login          = "autopr"
+  administrator_login          = "codeflow"
   administrator_login_password = var.postgres_password
   version                      = "11"
   ssl_enforcement_enabled      = true
 }
 
 resource "azurerm_redis_cache" "redis" {
-  name                = "autopr-redis"
+  name                = "codeflow-redis"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   capacity            = 1
@@ -82,7 +82,7 @@ resource "azurerm_redis_cache" "redis" {
 }
 
 resource "azurerm_storage_account" "tfstate" {
-  name                     = "autoprtfstate"
+  name                     = "codeflowtfstate"
   resource_group_name      = azurerm_resource_group.rg.name
   location                 = azurerm_resource_group.rg.location
   account_tier             = "Standard"
