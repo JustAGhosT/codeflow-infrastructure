@@ -69,7 +69,8 @@ if (-not $rgExists) {
     Write-Host "  Creating resource group..." -ForegroundColor Gray
     az group create --name $ResourceGroup --location $Location --output none
     Write-Host "  ✓ Resource group created" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "  ✓ Resource group already exists" -ForegroundColor Green
 }
 Write-Host ""
@@ -118,14 +119,16 @@ try {
     try {
         $file = Get-Item $CredentialsFile -Force
         $file.Attributes = $file.Attributes -bor [System.IO.FileAttributes]::Hidden
-    } catch {
+    }
+    catch {
         # Ignore if we can't hide the file
     }
     Write-Host "⚠️  IMPORTANT: Credentials saved to $CredentialsFile" -ForegroundColor Yellow
     Write-Host "   Store them in a secure secrets manager (Azure Key Vault, etc.)" -ForegroundColor Gray
     Write-Host "   Then delete the file: Remove-Item $CredentialsFile" -ForegroundColor Gray
     Write-Host "   DO NOT commit credentials files to version control!" -ForegroundColor Red
-} catch {
+}
+catch {
     Write-Host "⚠️  WARNING: Could not save credentials file: $_" -ForegroundColor Yellow
     Write-Host "   Credentials are:" -ForegroundColor Yellow
     Write-Host "     PostgreSQL Password: $env:POSTGRES_PASSWORD" -ForegroundColor Gray
@@ -145,15 +148,15 @@ az deployment group create `
     --resource-group $ResourceGroup `
     --template-file $bicepFile `
     --parameters `
-        environment=$Environment `
-        regionAbbr=$RegionAbbr `
-        location=$Location `
-        postgresLocation=$PostgresLocation `
-        customDomain=$CustomDomain `
-        containerImage=$ContainerImage `
-        postgresLogin=$PostgresLogin `
-        postgresPassword=$env:POSTGRES_PASSWORD `
-        redisPassword=$env:REDIS_PASSWORD `
+    environment=$Environment `
+    regionAbbr=$RegionAbbr `
+    location=$Location `
+    postgresLocation=$PostgresLocation `
+    customDomain=$CustomDomain `
+    containerImage=$ContainerImage `
+    postgresLogin=$PostgresLogin `
+    postgresPassword=$env:POSTGRES_PASSWORD `
+    redisPassword=$env:REDIS_PASSWORD `
     --output json | Out-File -FilePath "deployment-output.json" -Encoding utf8
 
 if ($LASTEXITCODE -eq 0) {
@@ -175,16 +178,20 @@ if ($LASTEXITCODE -eq 0) {
                 Write-Host "1. Add DNS CNAME record for $CustomDomain pointing to the Container App URL above" -ForegroundColor White
                 Write-Host "2. Wait for DNS propagation (typically 15-30 minutes)" -ForegroundColor White
                 Write-Host "3. Azure will automatically provision the SSL certificate" -ForegroundColor White
-            } else {
+            }
+            else {
                 Write-Host ""
                 Write-Host "Note: No custom domain configured. Container App is accessible via the URL above." -ForegroundColor Gray
                 Write-Host "To add a custom domain later, redeploy with -CustomDomain parameter." -ForegroundColor Gray
             }
-        } catch {
+        }
+        catch {
             Write-Host "⚠️  Could not read deployment output: $_" -ForegroundColor Yellow
         }
     }
-} else {
+}
+else {
     Write-Host "✗ Deployment failed!" -ForegroundColor Red
     exit 1
 }
+
