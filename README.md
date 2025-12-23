@@ -1,120 +1,74 @@
-﻿# CodeFlow Infrastructure
+# ⚠️ DEPRECATED - Repository Archived
 
-Production infrastructure as code (IaC) for CodeFlow - the source of truth for live environments.
+> **This repository has been merged into [codeflow-orchestration](https://github.com/JustAGhosT/codeflow-orchestration).**
 
-## Purpose
+---
 
-This repository contains CodeFlow-specific infrastructure definitions using Bicep and Terraform. This is where "real" infrastructure lives and is deployed from.
+## New Location
 
-**Important**: This repository contains production-grade, CodeFlow-specific infrastructure. For generic bootstrap scripts that can be used for any repository, see [`codeflow-azure-setup`](https://github.com/JustAGhosT/codeflow-azure-setup).
+All infrastructure code has been moved to the `codeflow-orchestration` repository:
 
-## Infrastructure Components
+| Component | Old Location | New Location |
+|-----------|--------------|--------------|
+| Bicep templates | `bicep/` | `codeflow-orchestration/infrastructure/bicep/` |
+| Terraform | `terraform/` | `codeflow-orchestration/infrastructure/terraform/` |
+| Kubernetes | `kubernetes/` | `codeflow-orchestration/infrastructure/kubernetes/` |
+| Docker | `docker/` | `codeflow-orchestration/infrastructure/docker/` |
+| CI/CD Workflows | `.github/workflows/` | `codeflow-orchestration/infrastructure/.github/workflows/` |
 
-### 1. CodeFlow Engine Application (`bicep/codeflow-engine.bicep`)
+---
 
-Production-ready infrastructure for the CodeFlow Engine application:
-- **Azure Container Apps**: Serverless container hosting
-- **Azure Database for PostgreSQL**: Primary database
-- **Azure Cache for Redis**: Caching and session storage
-- **Log Analytics Workspace**: Centralized logging
+## Migration Guide
 
-See [README-CODEFLOW-ENGINE.md](bicep/README-CODEFLOW-ENGINE.md) for deployment instructions.
-
-### 2. Website (`bicep/website.bicep`)
-
-Marketing website infrastructure:
-- **Azure Static Web Apps**: Hosting for Next.js website
-
-See [README-WEBSITE.md](bicep/README-WEBSITE.md) for deployment instructions.
-
-### 3. Legacy Infrastructure (`bicep/main.bicep`)
-
-Original infrastructure template (AKS, ACR, PostgreSQL, Redis):
-- **Azure Kubernetes Service (AKS)**: Container orchestration
-- **Azure Container Registry (ACR)**: Container image storage
-- **PostgreSQL**: Database server
-- **Redis**: Cache server
-
-## Deployment Options
-
-### Bicep (Recommended for Azure)
-
-Bicep is the native Azure IaC language and is recommended for Azure deployments:
-
-**CodeFlow Engine:**
-```bash
-bash bicep/deploy-codeflow-engine.sh prod san "eastus2"
-```
-
-**Website:**
-```bash
-az group create --name prod-rg-san-codeflow --location "eastus2"
-az deployment group create \
-  --resource-group prod-rg-san-codeflow \
-  --template-file bicep/website.bicep \
-  --parameters @bicep/website-parameters.json
-```
-
-### Terraform
-
-Terraform is located in the `terraform` directory and provides a cloud-agnostic option:
+### Clone the New Repository
 
 ```bash
-cd terraform
-terraform init
-terraform plan
-terraform apply
+git clone https://github.com/JustAGhosT/codeflow-orchestration.git
+cd codeflow-orchestration/infrastructure
 ```
 
-## Naming Convention
+### Update Your Workflows
 
-All resources follow the pattern: `{env}-{resourcetype}-{region}-codeflow`
+If you have workflows referencing this repository, update them to use:
 
-- **env**: Environment (prod, dev, staging)
-- **resourcetype**: Resource type abbreviation (stapp, codeflow, rg, etc.)
-- **region**: Azure region abbreviation (san, eus, wus, etc.)
+```yaml
+# Old
+- uses: actions/checkout@v4
+  with:
+    repository: JustAGhosT/codeflow-infrastructure
 
-Examples:
-- `prod-stapp-san-codeflow` - Static Web App
-- `prod-codeflow-san-app` - Container App
-- `prod-rg-san-codeflow` - Resource Group
+# New
+- uses: actions/checkout@v4
+  with:
+    repository: JustAGhosT/codeflow-orchestration
+    path: orchestration
 
-## Repository Structure
-
-```
-codeflow-infrastructure/
-â”œâ”€â”€ bicep/              # Bicep templates
-â”‚   â”œâ”€â”€ codeflow-engine.bicep
-â”‚   â”œâ”€â”€ website.bicep
-â”‚   â””â”€â”€ ...
-â”œâ”€â”€ terraform/          # Terraform configurations
-â”‚   â”œâ”€â”€ main.tf
-â”‚   â””â”€â”€ ...
-â”œâ”€â”€ .github/
-â”‚   â””â”€â”€ workflows/     # Deployment workflows
-â””â”€â”€ README.md
+# Then reference: orchestration/infrastructure/bicep/...
 ```
 
-## Boundary Rules
+### Update Your Bookmarks
 
-**This repository contains**:
-- âœ… CodeFlow-specific infrastructure
-- âœ… Production environments (prod/dev/uat)
-- âœ… Real infrastructure that is source of truth
-- âœ… Deployment workflows
+- **Old:** `https://github.com/JustAGhosT/codeflow-infrastructure`
+- **New:** `https://github.com/JustAGhosT/codeflow-orchestration/tree/main/infrastructure`
 
-**This repository does NOT contain**:
-- âŒ Generic bootstrap scripts (see `codeflow-azure-setup`)
-- âŒ Application code (see `codeflow-engine`)
-- âŒ Reusable, org-agnostic scripts
+---
 
-## CI/CD
+## Why This Change?
 
-Deployment workflows are located in `.github/workflows/` and can:
-- Trigger deployments for specific environments
-- Coordinate deployments across multiple repositories
-- Manage infrastructure lifecycle
+1. **Single source of truth** - All infrastructure and orchestration in one place
+2. **Simplified CI/CD** - One repository to manage all deployment automation
+3. **Better discoverability** - Contributors find everything in one place
+4. **Reduced repository sprawl** - 7 repos → 5 repos
 
-## License
+---
 
-MIT
+## Questions?
+
+If you have questions about this migration, please:
+1. Open an issue in [codeflow-orchestration](https://github.com/JustAGhosT/codeflow-orchestration/issues)
+2. Review the [Infrastructure Consolidation Plan](https://github.com/JustAGhosT/codeflow-orchestration/blob/main/docs/INFRASTRUCTURE_CONSOLIDATION_PLAN.md)
+
+---
+
+**Archived:** 2025-01-XX
+**Migration completed by:** Infrastructure Team
